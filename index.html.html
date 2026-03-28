@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Genie · Paytm Query Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #00d4aa;
+    --accent2: #7b61ff;
+    --paytm: #002970;
+    --paytm-light: #00baf2;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --sql-bg: #0d1117;
+    --sql-keyword: #ff7b72;
+    --sql-string: #a5d6ff;
+    --sql-comment: #8b949e;
+    --success: #3fb950;
+    --danger: #f85149;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,212,170,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at 10% 80%, rgba(123,97,255,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(0,186,242,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .paytm-badge {
+    background: #00baf2;
+    color: #002970;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .divider-v {
+    width: 1px;
+    height: 22px;
+    background: var(--border);
+  }
+
+  .app-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.3px;
+  }
+
+  .app-title span {
+    color: var(--accent);
+  }
+
+  .db-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .db-dot {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* API KEY SETUP */
+  #setup-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,10,15,0.97);
+    backdrop-filter: blur(20px);
+  }
+
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 460px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .setup-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .setup-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .setup-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .setup-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .setup-sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .text-input {
+    width: 100%;
+    background: var(--sql-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .text-input:focus {
+    border-color: var(--accent);
+  }
+
+  .text-input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover {
+    background: #00f0c0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,212,170,0.3);
+  }
+
+  /* SCHEMA PANEL */
+  #schema-panel {
+    display: none;
+    position: fixed;
+    top: 57px;
+    bottom: 0;
+    left: 0;
+    width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 5;
+    padding: 16px;
+  }
+
+  #schema-panel.open { display: block; }
+
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 14px;
+  }
+
+  .schema-textarea {
+    width: 100%;
+    background: var(--sql-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    resize: vertical;
+    min-height: 200px;
+    outline: none;
+    line-height: 1.6;
+  }
+
+  .schema-textarea:focus { border-color: var(--accent2); }
+  .schema-textarea::placeholder { color: var(--muted); }
+
+  .schema-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  /* MAIN LAYOUT */
+  #app {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+  }
+
+  #app.visible { display: flex; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .btn-tool {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-tool:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.05);
+  }
+
+  .btn-tool.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.08);
+  }
+
+  /* CHAT AREA */
+  #chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  /* scrollbar */
+  #chat-container::-webkit-scrollbar { width: 5px; }
+  #chat-container::-webkit-scrollbar-track { background: transparent; }
+  #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Welcome */
+  .welcome-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+
+  .welcome-msg .genie-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .welcome-msg h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .welcome-msg p {
+    font-size: 14px;
+    max-width: 480px;
+    margin: 0 auto 24px;
+    line-height: 1.7;
+  }
+
+  .quick-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .quick-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: 'Syne', sans-serif;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.06);
+  }
+
+  /* Messages */
+  .msg {
+    display: flex;
+    gap: 12px;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .msg.user .msg-avatar {
+    background: var(--accent2);
+  }
+
+  .msg.assistant .msg-avatar {
+    background: linear-gradient(135deg, var(--accent), var(--paytm-light));
+  }
+
+  .msg-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .msg.user .msg-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .msg-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 100%;
+  }
+
+  .msg.user .msg-bubble {
+    background: rgba(123,97,255,0.12);
+    border-color: rgba(123,97,255,0.3);
+    text-align: right;
+  }
+
+  /* SQL Block */
+  .sql-block {
+    background: var(--sql-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .sql-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .sql-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .sql-lang {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sql-keyword);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 10px;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .copy-btn.copied {
+    color: var(--success);
+    border-color: var(--success);
+  }
+
+  .superset-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,186,242,0.1);
+    border: 1px solid rgba(0,186,242,0.35);
+    border-radius: 5px;
+    padding: 4px 10px;
+    color: #00baf2;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .superset-btn:hover {
+    background: rgba(0,186,242,0.2);
+    border-color: #00baf2;
+    box-shadow: 0 0 10px rgba(0,186,242,0.2);
+  }
+
+  .sql-code {
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1d9;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+
+  /* SQL syntax highlight */
+  .kw { color: #ff7b72; font-weight: 600; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cmt { color: #8b949e; font-style: italic; }
+  .tbl { color: #ffa657; }
+
+  /* Explanation block */
+  .explain-block {
+    background: rgba(0,212,170,0.05);
+    border: 1px solid rgba(0,212,170,0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .explain-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  /* Thinking animation */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: dot 1.2s infinite;
+  }
+
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* INPUT BAR */
+  .input-bar {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 8px 8px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .input-row:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.08);
+  }
+
+  #query-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    resize: none;
+    max-height: 120px;
+    min-height: 24px;
+    line-height: 1.6;
+    padding: 4px 0;
+  }
+
+  #query-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    color: #0a0a0f;
+  }
+
+  .send-btn:hover:not(:disabled) {
+    background: #00f0c0;
+    transform: scale(1.05);
+  }
+
+  .send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .input-hints {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 860px;
+    margin: 8px auto 0;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Error */
+  .error-bubble {
+    background: rgba(248,81,73,0.08);
+    border: 1px solid rgba(248,81,73,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 8px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #00baf2;
+    color: #002970;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,186,242,0.4);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* History badge */
+  .history-count {
+    background: var(--accent2);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-icon">🧞</div>
+    <div class="setup-title">SQL Genie</div>
+    <div class="setup-sub">
+      Your AI query assistant for Paytm's Hive/Trino stack.<br>
+      Enter your <strong style="color:var(--accent)">free</strong> Groq API key to get started.<br>
+      Get one free at <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a> → API Keys (no credit card needed).
+    </div>
+    <div class="input-group">
+      <label class="input-label">Groq API Key (Free)</label>
+      <input class="text-input" type="password" id="api-key-input" placeholder="gsk_..." />
+    </div>
+    <button class="btn-primary" onclick="saveKey()">Connect → Start Querying</button>
+    <div style="margin-top:14px; font-size:11px; color:var(--muted); text-align:center;">
+      🔒 Key stored in your browser only. Groq is FREE — no credit card needed.
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-area">
+    <div class="paytm-badge">Paytm</div>
+    <div class="divider-v"></div>
+    <div class="app-title">SQL <span>Genie</span></div>
+  </div>
+  <div class="db-info">
+    <div class="db-dot"></div>
+    <span>trino · hive_offline · stsservicev2</span>
+  </div>
+</header>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn-tool" id="schema-toggle" onclick="toggleSchema()">
+      📋 Table Schema
+    </button>
+    <button class="btn-tool" onclick="clearChat()">
+      🗑 Clear Chat
+    </button>
+    <button class="btn-tool" onclick="changeKey()" style="margin-left:auto;">
+      🔑 Change API Key
+    </button>
+  </div>
+
+  <!-- SCHEMA PANEL -->
+  <div id="schema-panel">
+    <div class="panel-title">📋 Table Schema</div>
+    <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">Paste your table schema below. The AI will use this to write accurate SQL.</div>
+    <textarea class="schema-textarea" id="schema-input" placeholder="Example:
+
+TABLE: transactions
+- txn_id (string)
+- mid (string) -- merchant ID
+- txn_started_at (timestamp)
+- txn_amount (double)
+- payment_type (string)
+- payment_mode (string)
+- settlement_date (date)
+- order_id (string)
+
+TABLE: merchants
+- mid (string)
+- merchant_name (string)
+- bank_name (string)
+..."></textarea>
+    <div class="schema-hint">💡 Tip: Copy table names + columns from Superset's "See Table Schema" dropdown.</div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat-container">
+    <div class="welcome-msg" id="welcome">
+      <span class="genie-icon">🧞</span>
+      <h2>What report do you need?</h2>
+      <p>Describe your requirement in plain English. I'll generate Trino-compatible SQL ready to run in Superset.</p>
+      <div class="quick-prompts">
+        <button class="quick-btn" onclick="setPrompt('Show total transaction amount per merchant for last 7 days')">💰 Merchant txn summary (7d)</button>
+        <button class="quick-btn" onclick="setPrompt('Count failed transactions grouped by payment mode for today')">❌ Failed txns by payment mode</button>
+        <button class="quick-btn" onclick="setPrompt('Show settlement pending transactions where txn_started_at < settlement_date')">📋 Settlement pending</button>
+        <button class="quick-btn" onclick="setPrompt('Top 10 merchants by transaction volume this month')">🏆 Top 10 merchants</button>
+        <button class="quick-btn" onclick="setPrompt('Daily transaction count and amount trend for last 30 days')">📈 Daily trend (30d)</button>
+        <button class="quick-btn" onclick="setPrompt('UPI vs card vs wallet split for yesterday')">🔀 Payment mode split</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="input-bar">
+    <div class="input-row">
+      <textarea
+        id="query-input"
+        placeholder="e.g. Show me all transactions above ₹10,000 for last week grouped by merchant..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hints">
+      <span>⏎ Send · Shift+⏎ New line</span>
+      <span>Powered by Groq · Llama 3.3 70B · Free · Trino SQL</span>
+    </div>
+  </div>
+</div>
+
+<script>
+let apiKey = '';
+let chatHistory = [];
+let msgCount = 0;
+
+// ----- SETUP -----
+function saveKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('gsk_')) {
+    alert('Please enter a valid Groq API key (starts with gsk_...)');
+    return;
+  }
+  apiKey = val;
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+}
+
+function changeKey() {
+  apiKey = '';
+  chatHistory = [];
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('api-key-input').value = '';
+}
+
+// ----- SCHEMA PANEL -----
+function toggleSchema() {
+  const panel = document.getElementById('schema-panel');
+  const btn = document.getElementById('schema-toggle');
+  const chat = document.getElementById('chat-container');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active', !isOpen);
+  chat.style.marginLeft = isOpen ? '0' : '280px';
+}
+
+// ----- CHAT -----
+function setPrompt(text) {
+  const inp = document.getElementById('query-input');
+  inp.value = text;
+  autoResize(inp);
+  inp.focus();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function clearChat() {
+  chatHistory = [];
+  msgCount = 0;
+  const c = document.getElementById('chat-container');
+  c.innerHTML = '';
+  const welcome = document.createElement('div');
+  welcome.className = 'welcome-msg';
+  welcome.id = 'welcome';
+  welcome.innerHTML = `
+    <span class="genie-icon">🧞</span>
+    <h2>What report do you need?</h2>
+    <p>Describe your requirement in plain English. I'll generate Trino-compatible SQL ready to run in Superset.</p>
+    <div class="quick-prompts">
+      <button class="quick-btn" onclick="setPrompt('Show total transaction amount per merchant for last 7 days')">💰 Merchant txn summary (7d)</button>
+      <button class="quick-btn" onclick="setPrompt('Count failed transactions grouped by payment mode for today')">❌ Failed txns by payment mode</button>
+      <button class="quick-btn" onclick="setPrompt('Show settlement pending transactions where txn_started_at < settlement_date')">📋 Settlement pending</button>
+      <button class="quick-btn" onclick="setPrompt('Top 10 merchants by transaction volume this month')">🏆 Top 10 merchants</button>
+      <button class="quick-btn" onclick="setPrompt('Daily transaction count and amount trend for last 30 days')">📈 Daily trend (30d)</button>
+      <button class="quick-btn" onclick="setPrompt('UPI vs card vs wallet split for yesterday')">🔀 Payment mode split</button>
+    </div>`;
+  c.appendChild(welcome);
+}
+
+function addUserMsg(text) {
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `
+    <div class="msg-avatar">👤</div>
+    <div class="msg-body">
+      <div class="msg-bubble">${escHtml(text)}</div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+
+function addThinking() {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = 'thinking-msg';
+  div.innerHTML = `
+    <div class="msg-avatar">🧞</div>
+    <div class="msg-body">
+      <div class="thinking">
+        <div class="dots"><span></span><span></span><span></span></div>
+        Generating SQL...
+      </div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+
+function removeThinking() {
+  const t = document.getElementById('thinking-msg');
+  if (t) t.remove();
+}
+
+function addAssistantMsg(sqlCode, explanation) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  const id = 'copy-' + (++msgCount);
+  const supersetUrl = 'https://ppsl-query.paytmpayments.com/sqllab/';
+
+  div.innerHTML = `
+    <div class="msg-avatar">🧞</div>
+    <div class="msg-body">
+      ${explanation ? `<div class="explain-block"><div class="explain-label">💡 What this does</div>${escHtml(explanation)}</div>` : ''}
+      <div class="sql-block">
+        <div class="sql-header">
+          <span class="sql-lang">⚡ Trino SQL</span>
+          <div class="sql-actions">
+            <button class="copy-btn" id="${id}" onclick="copySQL(this, ${JSON.stringify(sqlCode)})">
+              📋 Copy SQL
+            </button>
+            <button class="superset-btn" onclick="openInSuperset(${JSON.stringify(sqlCode)})">
+              🚀 Open in Superset
+            </button>
+          </div>
+        </div>
+        <div class="sql-code">${highlightSQL(sqlCode)}</div>
+      </div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+
+function addErrorMsg(msg) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.innerHTML = `
+    <div class="msg-avatar">🧞</div>
+    <div class="msg-body">
+      <div class="error-bubble">⚠️ ${escHtml(msg)}</div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+
+function copySQL(btn, sql) {
+  navigator.clipboard.writeText(sql).then(() => {
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy SQL';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function openInSuperset(sql) {
+  // Copy SQL to clipboard first, then open Superset
+  navigator.clipboard.writeText(sql).then(() => {
+    window.open('https://ppsl-query.paytmpayments.com/sqllab/', '_blank');
+    // Show a toast hint
+    showToast('SQL copied! Paste it in Superset SQL editor (Ctrl+V)');
+  }).catch(() => {
+    // If clipboard fails, just open Superset
+    window.open('https://ppsl-query.paytmpayments.com/sqllab/', '_blank');
+  });
+}
+
+function scrollBottom() {
+  const c = document.getElementById('chat-container');
+  c.scrollTop = c.scrollHeight;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// Basic SQL syntax highlighter
+function highlightSQL(sql) {
+  const keywords = ['SELECT','FROM','WHERE','JOIN','LEFT','RIGHT','INNER','OUTER','ON','GROUP BY','ORDER BY',
+    'HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG',
+    'MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','INSERT','UPDATE','DELETE','CREATE',
+    'TABLE','DATE','TIMESTAMP','CURRENT_DATE','CURRENT_TIMESTAMP','LOWER','UPPER','CAST','COALESCE',
+    'DATE_DIFF','DATE_TRUNC','DATE_ADD','INTERVAL','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE',
+    'GROUP','ORDER','CROSS','FULL','EXISTS','EXTRACT','FORMAT','CONCAT','LENGTH','TRIM','SUBSTRING',
+    'REPLACE','ROUND','FLOOR','CEIL','ABS','IF','IFF','TRY_CAST','UNNEST','LATERAL','VALUES','SET',
+    'DROP','ALTER','INDEX','VIEW','MATERIALIZED','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN','FULL JOIN'];
+
+  let out = escHtml(sql);
+
+  // comments
+  out = out.replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
+
+  // keywords (word boundary)
+  keywords.sort((a,b) => b.length - a.length).forEach(kw => {
+    const re = new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`, 'gi');
+    out = out.replace(re, '<span class="kw">$1</span>');
+  });
+
+  // strings
+  out = out.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
+
+  // numbers
+  out = out.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="num">$1</span>');
+
+  return out;
+}
+
+// ----- API CALL -----
+async function sendMessage() {
+  const input = document.getElementById('query-input');
+  const text = input.value.trim();
+  if (!text || !apiKey) return;
+
+  const schema = document.getElementById('schema-input').value.trim();
+  const sendBtn = document.getElementById('send-btn');
+
+  input.value = '';
+  autoResize(input);
+  sendBtn.disabled = true;
+
+  addUserMsg(text);
+  chatHistory.push({ role: 'user', content: text });
+
+  addThinking();
+
+  const systemPrompt = `You are SQL Genie, an expert Trino/Hive SQL assistant for Paytm's internal data infrastructure.
+Database: hive_offline, Schema: stsservicev2, Engine: Trino.
+
+Key tables (common ones from the codebase):
+- transactions / txn: txn_id, mid, txn_started_at, txn_amount, payment_type, payment_mode, settlement_date, order_id, status
+- merchant details: mid, merchant_name, bank_name
+- entity_info: mid, bank_name (from pg.entity_info_snapshot_v3)
+- kyc_details: entity_id, (from pg.merchant_kyc_details_v3)
+
+${schema ? `USER-PROVIDED SCHEMA:\n${schema}\n` : ''}
+
+RULES:
+1. Always generate valid Trino SQL compatible with hive_offline schema.
+2. Use CURRENT_DATE for today, DATE_ADD('day', -N, CURRENT_DATE) for date arithmetic.
+3. Prefer LOWER() for string comparisons on mid fields.
+4. Always add dl_last_updated <= CURRENT_DATE for snapshot tables.
+5. Return a JSON object with exactly two fields:
+   - "sql": the complete SQL query (string)
+   - "explanation": a short 1-2 sentence plain English explanation of what the query does
+
+RESPOND ONLY WITH VALID JSON. No markdown, no backticks, no extra text. Example:
+{"sql":"SELECT ...","explanation":"This query fetches..."}`;
+
+  try {
+    const groqMessages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory.slice(0, -1),
+      { role: 'user', content: text }
+    ];
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: groqMessages,
+        temperature: 0.1,
+        max_tokens: 1000
+      })
+    });
+
+    const data = await res.json();
+    removeThinking();
+
+    if (data.error) {
+      addErrorMsg(data.error.message || 'API error. Check your Groq API key.');
+      chatHistory.pop();
+    } else {
+      const raw = data.choices?.[0]?.message?.content || '';
+      chatHistory.push({ role: 'assistant', content: raw });
+
+      try {
+        const cleaned = raw.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        addAssistantMsg(parsed.sql || raw, parsed.explanation || '');
+      } catch {
+        addAssistantMsg(raw, '');
+      }
+    }
+  } catch (err) {
+    removeThinking();
+    chatHistory.pop();
+    addErrorMsg('Network error: ' + err.message);
+  }
+
+  sendBtn.disabled = false;
+  input.focus();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Enter key on API key input
+document.getElementById('api-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveKey();
+});
+</script>
+</body>
+</html>
