@@ -21,7 +21,6 @@
     --danger: #f85149;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  /* FIX: Changed min-height to strict height to prevent the UI from stretching out of bounds */
   body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
   body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,212,170,0.07) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 10% 80%, rgba(123,97,255,0.07) 0%, transparent 70%); pointer-events:none; z-index:0; }
 
@@ -96,6 +95,13 @@
   .btn-generate { background:var(--accent); color:#0a0a0f; border:none; border-radius:8px; padding:8px 16px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; margin-left:auto; }
   .btn-generate:hover { background:#00f0c0; box-shadow:0 0 14px rgba(0,212,170,0.3); }
 
+  /* DATE TOGGLE */
+  .date-toggle { display: flex; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 32px; }
+  .date-toggle input { display: none; }
+  .date-toggle label { padding: 0 12px; height: 100%; display: flex; align-items: center; font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.8px; }
+  .date-toggle input:checked + label { background: var(--accent); color: #0a0a0f; }
+  .date-input:disabled { opacity: 0.4; cursor: not-allowed; border-color: transparent; }
+
   /* SCHEMA PANEL */
   #schema-panel { display:none; position:fixed; top:148px; bottom:0; left:0; width:280px; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:5; padding:16px; }
   #schema-panel.open { display:block; }
@@ -141,7 +147,6 @@
   .copy-btn.copied { color:var(--success); border-color:var(--success); }
   .superset-btn { display:flex; align-items:center; gap:5px; background:rgba(0,186,242,0.1); border:1px solid rgba(0,186,242,0.3); border-radius:5px; padding:4px 10px; color:#00baf2; font-size:11px; font-family:'Syne',sans-serif; font-weight:600; cursor:pointer; transition:all 0.15s; }
   .superset-btn:hover { background:rgba(0,186,242,0.2); }
-  /* FIX: Removed max-height here so you don't get trapped in a double scrollbar situation */
   .sql-code {padding:16px; font-size:12.5px; line-height:1.75; color:#c9d1d9; white-space:pre; overflow:auto; word-break:normal; font-family:'JetBrains Mono',monospace;}
   .kw { color:#ff7b72; font-weight:600; }
   .str { color:#a5d6ff; }
@@ -233,7 +238,15 @@
     <span class="param-label">MID</span>
     <input class="param-input" id="mid-input" type="text" placeholder="merchant id" oninput="onMidInput(this)" />
     <span class="mid-tag" id="mid-tag"></span>
-    <span class="param-label" style="margin-left:8px;">From</span>
+    
+    <div class="date-toggle" style="margin-left: 14px;">
+      <input type="radio" id="fy-date" name="date-mode" value="fy" onchange="handleDateMode(this)">
+      <label for="fy-date">FY 25-26</label>
+      <input type="radio" id="custom-date" name="date-mode" value="custom" checked onchange="handleDateMode(this)">
+      <label for="custom-date">Custom</label>
+    </div>
+
+    <span class="param-label" style="margin-left:12px;">From</span>
     <input class="date-input" id="date-from" type="date" />
     <span class="date-sep">→</span>
     <span class="param-label">To</span>
@@ -278,7 +291,7 @@
 // ══════════════════════════════════════════════════
 //  CONFIG  — edit only this section
 // ══════════════════════════════════════════════════
-const GROQ_API_KEY = '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'; // 
+const GROQ_API_KEY = 'YOUR_GROQ_API_KEY_HERE'; // ← paste your gsk_... key here bhai!!!
 
 const USERS = {
   'ratan.jha' : 'paytm@123',
@@ -341,6 +354,36 @@ window.addEventListener('load', () => {
   const saved = sessionStorage.getItem('sguser');
   if (saved && USERS[saved]) { currentUser = saved; launchApp(saved); }
 });
+
+// ── DATE TOGGLE LOGIC ──
+let savedCustomFrom = '';
+let savedCustomTo = '';
+
+function handleDateMode(radio) {
+  const fromInput = document.getElementById('date-from');
+  const toInput = document.getElementById('date-to');
+
+  if (radio.value === 'fy') {
+    // FY select hone par custom dates ko memory mein save kar lo
+    savedCustomFrom = fromInput.value;
+    savedCustomTo = toInput.value;
+
+    // Exact FY dates set karo (YYYY-MM-DD format)
+    fromInput.value = '2025-04-01';
+    toInput.value = '2026-03-31';
+
+    // Inputs ko lock (disable) kar do
+    fromInput.disabled = true;
+    toInput.disabled = true;
+  } else {
+    // Custom wapas aane par purani dates restore kardo aur unlock kardo
+    if (savedCustomFrom) fromInput.value = savedCustomFrom;
+    if (savedCustomTo) toInput.value = savedCustomTo;
+    
+    fromInput.disabled = false;
+    toInput.disabled = false;
+  }
+}
 
 // ── MID INPUT ──
 function onMidInput(el) {
@@ -618,9 +661,16 @@ function clearChat() {
   chatHistory = []; msgCount = 0;
   document.getElementById('mid-input').value = '';
   document.getElementById('mid-tag').classList.remove('show');
+  
+  // Custom pe reset karke basic dates wapas laaye
+  document.getElementById('custom-date').checked = true;
+  document.getElementById('date-from').disabled = false;
+  document.getElementById('date-to').disabled = false;
+  
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
+  
   document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><span class="genie-icon">🧞</span><h2>Settlement Query Assistant</h2><p>Enter a MID and pick a date range above, then click ⚡ Generate.</p><div class="how-to"><div class="how-step"><div class="step-num">1️⃣</div><div class="step-title">Enter MID</div><div class="step-desc">Auto-converts to lowercase</div></div><div class="how-step"><div class="step-num">2️⃣</div><div class="step-title">Pick Date Range</div><div class="step-desc">e.g. 1 Jan 2024 → 31 Mar 2025</div></div><div class="how-step"><div class="step-num">3️⃣</div><div class="step-title">Generate & Run</div><div class="step-desc">Copy SQL → Superset → Run</div></div></div></div>`;
 }
 
@@ -637,7 +687,6 @@ function addThinking() {
 }
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
 
-// FIX: Cleaned up the nested function declarations and fixed the copy handlers
 function addAssistantMsg(sqlCode, explanation) {
   const div = document.createElement('div');
   div.className = 'msg assistant';
@@ -684,7 +733,6 @@ function addAssistantMsg(sqlCode, explanation) {
   scrollBottom();
 }
 
-// FIX: Moved the copy functions OUTSIDE of addAssistantMsg
 function copyFullSQL(btn) {
   const sql = decodeURIComponent(btn.getAttribute('data-sql'));
   navigator.clipboard.writeText(sql)
@@ -728,7 +776,8 @@ function highlightSQL(sql) {
   return out;
 }
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function scrollBottom(){ /* Auto-scroll disabled */ }
+/* Auto-scroll is disabled below */
+function scrollBottom(){ /* c=document.getElementById('chat-container'); c.scrollTop=c.scrollHeight; */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
