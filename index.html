@@ -140,7 +140,7 @@
   .copy-btn.copied { color:var(--success); border-color:var(--success); }
   .superset-btn { display:flex; align-items:center; gap:5px; background:rgba(0,186,242,0.1); border:1px solid rgba(0,186,242,0.3); border-radius:5px; padding:4px 10px; color:#00baf2; font-size:11px; font-family:'Syne',sans-serif; font-weight:600; cursor:pointer; transition:all 0.15s; }
   .superset-btn:hover { background:rgba(0,186,242,0.2); }
-  .sql-code { padding:16px; font-size:12.5px; line-height:1.75; color:#c9d1d9; white-space:pre-wrap; word-break:break-word; overflow-x:auto; font-family:'JetBrains Mono',monospace; }
+  .sql-code {padding:16px; font-size:12.5px; line-height:1.75; color:#c9d1d9; white-space:pre; overflow:auto; max-height:500px; word-break:normal; font-family:'JetBrains Mono',monospace;}
   .kw { color:#ff7b72; font-weight:600; }
   .str { color:#a5d6ff; }
   .num { color:#79c0ff; }
@@ -640,10 +640,64 @@ function addThinking() {
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
 
 function addAssistantMsg(sqlCode, explanation) {
-  const div=document.createElement('div'); div.className='msg assistant';
-  const id='copy-'+(++msgCount);
-  div.innerHTML=`<div class="msg-avatar">🧞</div><div class="msg-body">${explanation?`<div class="explain-block"><div class="explain-label">💡 What this does</div>${escHtml(explanation)}</div>`:''}<div class="sql-block"><div class="sql-header"><span class="sql-lang">⚡ Trino SQL</span><div class="sql-actions"><button class="copy-btn" id="${id}" onclick="copySQL(this,${JSON.stringify(sqlCode)})">📋 Copy SQL</button><button class="superset-btn" onclick="openInSuperset(${JSON.stringify(sqlCode)})">🚀 Open in Superset</button></div></div><div class="sql-code">${highlightSQL(sqlCode)}</div></div><div class="ready-hint">✅ Ready · Enter new MID & dates for next query</div></div>`;
-  document.getElementById('chat-container').appendChild(div); scrollBottom();
+function addAssistantMsg(sqlCode, explanation) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+
+  const id = 'copy-' + (++msgCount);
+
+  div.innerHTML = `
+    <div class="msg-avatar">🧞</div>
+    <div class="msg-body">
+
+      ${explanation ? `
+      <div class="explain-block">
+        <div class="explain-label">💡 What this does</div>
+        ${escHtml(explanation)}
+      </div>` : ''}
+
+      <div class="sql-block">
+        
+        <div class="sql-header">
+          <span class="sql-lang">⚡ Trino SQL</span>
+          <div class="sql-actions">
+
+            <button class="copy-btn" onclick='copyFullSQL(${JSON.stringify(sqlCode)})'>
+              📋 Copy Full Query
+            </button>
+
+            <button class="copy-btn" id="${id}" onclick='copySQL(this,${JSON.stringify(sqlCode)})'>
+              📋 Copy SQL
+            </button>
+
+            <button class="superset-btn" onclick='openInSuperset(${JSON.stringify(sqlCode)})'>
+              🚀 Open in Superset
+            </button>
+
+          </div>
+        </div>
+
+        <div class="sql-code">
+          ${highlightSQL(sqlCode)}
+        </div>
+
+      </div>
+
+      <div class="ready-hint">
+        ✅ Ready · Enter new MID & dates for next query
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+  function copyFullSQL(sql) {
+  navigator.clipboard.writeText(sql)
+    .then(() => showToast('✅ Full query copied!'))
+    .catch(() => showToast('❌ Copy failed!'));
+}
 }
 function addErrorMsg(msg) {
   const d=document.createElement('div'); d.className='msg assistant';
