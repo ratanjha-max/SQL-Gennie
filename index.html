@@ -21,7 +21,8 @@
     --danger: #f85149;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  /* FIX: Changed min-height to strict height to prevent the UI from stretching out of bounds */
+  body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
   body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,212,170,0.07) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 10% 80%, rgba(123,97,255,0.07) 0%, transparent 70%); pointer-events:none; z-index:0; }
 
   /* ══ LOGIN ══ */
@@ -140,7 +141,8 @@
   .copy-btn.copied { color:var(--success); border-color:var(--success); }
   .superset-btn { display:flex; align-items:center; gap:5px; background:rgba(0,186,242,0.1); border:1px solid rgba(0,186,242,0.3); border-radius:5px; padding:4px 10px; color:#00baf2; font-size:11px; font-family:'Syne',sans-serif; font-weight:600; cursor:pointer; transition:all 0.15s; }
   .superset-btn:hover { background:rgba(0,186,242,0.2); }
-  .sql-code {padding:16px; font-size:12.5px; line-height:1.75; color:#c9d1d9; white-space:pre; overflow:auto; max-height:500px; word-break:normal; font-family:'JetBrains Mono',monospace;}
+  /* FIX: Removed max-height here so you don't get trapped in a double scrollbar situation */
+  .sql-code {padding:16px; font-size:12.5px; line-height:1.75; color:#c9d1d9; white-space:pre; overflow:auto; word-break:normal; font-family:'JetBrains Mono',monospace;}
   .kw { color:#ff7b72; font-weight:600; }
   .str { color:#a5d6ff; }
   .num { color:#79c0ff; }
@@ -173,7 +175,6 @@
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <div class="login-wrap">
     <div class="login-left">
@@ -207,10 +208,8 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ══ HEADER ══ -->
 <header>
   <div class="logo-area">
     <div class="paytm-badge">Paytm</div>
@@ -224,7 +223,6 @@
   </div>
 </header>
 
-<!-- ══ APP ══ -->
 <div id="app">
   <div class="toolbar">
     <button class="btn-tool" id="schema-toggle" onclick="toggleSchema()">📋 Table Schema</button>
@@ -240,7 +238,7 @@
     <span class="date-sep">→</span>
     <span class="param-label">To</span>
     <input class="date-input" id="date-to" type="date" />
-    <button class="btn-generate" onclick="generateSettlementQuery()">⚡ Generate Settlement Query</button>
+    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">⚡ Generate Settlement Query</button>
   </div>
 
   <div id="schema-panel">
@@ -639,17 +637,18 @@ function addThinking() {
 }
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
 
-function addAssistantMsg(sqlCode, explanation) {
+// FIX: Cleaned up the nested function declarations and fixed the copy handlers
 function addAssistantMsg(sqlCode, explanation) {
   const div = document.createElement('div');
   div.className = 'msg assistant';
-
   const id = 'copy-' + (++msgCount);
+
+  // Safely encode SQL to prevent quotes from breaking HTML attributes
+  const safeSql = encodeURIComponent(sqlCode);
 
   div.innerHTML = `
     <div class="msg-avatar">🧞</div>
     <div class="msg-body">
-
       ${explanation ? `
       <div class="explain-block">
         <div class="explain-label">💡 What this does</div>
@@ -657,59 +656,68 @@ function addAssistantMsg(sqlCode, explanation) {
       </div>` : ''}
 
       <div class="sql-block">
-        
         <div class="sql-header">
           <span class="sql-lang">⚡ Trino SQL</span>
           <div class="sql-actions">
-
-            <button class="copy-btn" onclick='copyFullSQL(${JSON.stringify(sqlCode)})'>
+            <button class="copy-btn" data-sql="${safeSql}" onclick="copyFullSQL(this)">
               📋 Copy Full Query
             </button>
-
-            <button class="copy-btn" id="${id}" onclick='copySQL(this,${JSON.stringify(sqlCode)})'>
+            <button class="copy-btn" id="${id}" data-sql="${safeSql}" onclick="copySQL(this)">
               📋 Copy SQL
             </button>
-
-            <button class="superset-btn" onclick='openInSuperset(${JSON.stringify(sqlCode)})'>
+            <button class="superset-btn" data-sql="${safeSql}" onclick="openInSuperset(this)">
               🚀 Open in Superset
             </button>
-
           </div>
         </div>
-
         <div class="sql-code">
           ${highlightSQL(sqlCode)}
         </div>
-
       </div>
-
       <div class="ready-hint">
         ✅ Ready · Enter new MID & dates for next query
       </div>
-
     </div>
   `;
 
   document.getElementById('chat-container').appendChild(div);
   scrollBottom();
 }
-  function copyFullSQL(sql) {
+
+// FIX: Moved the copy functions OUTSIDE of addAssistantMsg
+function copyFullSQL(btn) {
+  const sql = decodeURIComponent(btn.getAttribute('data-sql'));
   navigator.clipboard.writeText(sql)
     .then(() => showToast('✅ Full query copied!'))
     .catch(() => showToast('❌ Copy failed!'));
 }
+
+function copySQL(btn) {
+  const sql = decodeURIComponent(btn.getAttribute('data-sql'));
+  navigator.clipboard.writeText(sql).then(() => { 
+    btn.textContent='✅ Copied!'; 
+    btn.classList.add('copied'); 
+    setTimeout(()=>{ 
+      btn.textContent='📋 Copy SQL'; 
+      btn.classList.remove('copied'); 
+    }, 2000); 
+  });
 }
+
+function openInSuperset(btn) {
+  const sql = decodeURIComponent(btn.getAttribute('data-sql'));
+  navigator.clipboard.writeText(sql).then(()=>{ 
+    window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'); 
+    showToast('SQL copied! Press Ctrl+V in Superset'); 
+  }).catch(()=>window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'));
+}
+
 function addErrorMsg(msg) {
   const d=document.createElement('div'); d.className='msg assistant';
   d.innerHTML=`<div class="msg-avatar">🧞</div><div class="msg-body"><div class="error-bubble">⚠️ ${escHtml(msg)}</div></div>`;
   document.getElementById('chat-container').appendChild(d); scrollBottom();
 }
-function copySQL(btn,sql) {
-  navigator.clipboard.writeText(sql).then(()=>{ btn.textContent='✅ Copied!'; btn.classList.add('copied'); setTimeout(()=>{ btn.textContent='📋 Copy SQL'; btn.classList.remove('copied'); },2000); });
-}
-function openInSuperset(sql) {
-  navigator.clipboard.writeText(sql).then(()=>{ window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'); showToast('SQL copied! Press Ctrl+V in Superset'); }).catch(()=>window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'));
-}
+
 function highlightSQL(sql) {
   const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL'];
   let out=escHtml(sql);
