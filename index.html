@@ -308,7 +308,7 @@
   <div id="chat-container">
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
-      <h2>"Provide MID and take updated SQL query!"</h2>
+      <h2>"Tum mujhe MID do, mai tumhe query dunga!"</h2>
       <p>I can instantly generate Settlement and Transaction reports.</p>
       <div class="how-to">
         <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div>
@@ -789,7 +789,7 @@ RULES: Return ONLY valid JSON block.`;
   document.getElementById('query-input').focus();
 }
 
-// ── UI & ANIMATION HELPERS ──
+// ── UI HELPERS ──
 function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
 
 function clearChat() {
@@ -823,36 +823,6 @@ function addThinking() {
 
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
 
-// TYPING ANIMATION ENGINE 
-function typeHTML(element, html, callback) {
-  let i = 0;
-  element.innerHTML = '';
-  let text = '';
-  function type() {
-    if (i < html.length) {
-      let char = html.charAt(i);
-      text += char;
-      i++;
-      
-      // Fast forward if it's an HTML tag so it doesn't break rendering
-      if (char === '<') {
-         while(i < html.length && html.charAt(i-1) !== '>') {
-             text += html.charAt(i);
-             i++;
-         }
-         element.innerHTML = text;
-         type(); // No delay for tags
-      } else {
-         element.innerHTML = text;
-         setTimeout(type, 15); // Speed of typing in ms
-      }
-    } else {
-      if (callback) callback();
-    }
-  }
-  type();
-}
-
 function addTextOnlyMsg(text) {
   const div = document.createElement('div');
   div.className = 'msg assistant';
@@ -864,14 +834,12 @@ function addTextOnlyMsg(text) {
     <div class="msg-avatar">🧞‍♂️</div>
     <div class="msg-body">
       <div class="msg-bubble" style="background:var(--surface2); border-color:var(--accent); color:var(--text);">
-        <div class="typewriter-content"></div>
+        ${formattedText}
       </div>
     </div>
   `;
   document.getElementById('chat-container').appendChild(div);
-  
-  const contentBox = div.querySelector('.typewriter-content');
-  typeHTML(contentBox, formattedText);
+  scrollBottom();
 }
 
 function addAssistantMsg(sqlCode, explanation) {
@@ -891,10 +859,10 @@ function addAssistantMsg(sqlCode, explanation) {
       ${explanation ? `
       <div class="explain-block">
         <div class="explain-label">💡 Information</div>
-        <div class="typewriter-content"></div>
+        ${formattedExp}
       </div>` : ''}
 
-      <div class="sql-wrapper" style="display: none; opacity: 0; transition: opacity 0.5s;">
+      <div class="sql-wrapper">
         <div class="sql-block">
           <div class="sql-header">
             <span class="sql-lang">⚡ Trino SQL</span>
@@ -914,20 +882,7 @@ function addAssistantMsg(sqlCode, explanation) {
   `;
 
   document.getElementById('chat-container').appendChild(div);
-  
-  const contentBox = div.querySelector('.typewriter-content');
-  const sqlWrapper = div.querySelector('.sql-wrapper');
-
-  // Trigger typing first, then reveal the SQL block
-  if (explanation && contentBox) {
-    typeHTML(contentBox, formattedExp, () => {
-       sqlWrapper.style.display = 'block';
-       setTimeout(() => sqlWrapper.style.opacity = '1', 50);
-    });
-  } else {
-    sqlWrapper.style.display = 'block';
-    sqlWrapper.style.opacity = '1';
-  }
+  scrollBottom();
 }
 
 // EXPAND / COLLAPSE SQL BLOCK
