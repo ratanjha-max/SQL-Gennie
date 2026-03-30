@@ -225,7 +225,7 @@
         <div class="login-tagline">AI-powered Trino SQL Assistant for fast & flawless data retrieval.</div>
       </div>
       <div class="login-features">
-        <div class="login-feature"><div class="feat-icon">⚡</div>Instant settlement & txn queries</div>
+        <div class="login-feature"><div class="feat-icon">📊</div>Settlement, Txn & Recon Reports</div>
         <div class="login-feature"><div class="feat-icon">🤖</div>Smart NLP intent router</div>
         <div class="login-feature"><div class="feat-icon">🔡</div>Auto lowercase MID</div>
         <div class="login-feature"><div class="feat-icon">🚀</div>One-click open in Superset</div>
@@ -253,7 +253,7 @@
 
 <header>
   <div class="logo-area">
-    <div class="enterprise-badge">Internal Tool</div>
+    <div class="enterprise-badge">Data Tools</div>
     <div class="divider-v"></div>
     <div class="app-title">SQL <span>Ginny</span></div>
   </div>
@@ -309,10 +309,10 @@
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
       <h2>"I can help you in updating SQL query😊!"</h2>
-      <p>I can instantly generate Settlement and Transaction reports.</p>
+      <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
       <div class="how-to">
-        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div>
-        <div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Just type "txn" or "settlement" to decide.</div></div>
+        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to 31 dec"</div></div>
+        <div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Type "txn", "settlement" or "recon" to decide.</div></div>
         <div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div>
       </div>
     </div>
@@ -483,8 +483,10 @@ function generateSettlementQuery() {
 }
 
 // ── TEMPLATES ──
+
+// TIME HATAYI HUI TXN QUERY 🕒🚫
 function buildTransactionSQL(mid, s, e) {
-return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
+  return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
     a.*
 FROM hive_offline.dwh.pg_olap a
 WHERE a.txn_started_at >= TIMESTAMP '${s}'
@@ -492,6 +494,33 @@ WHERE a.txn_started_at >= TIMESTAMP '${s}'
   AND a.ingest_date >= DATE '${s}'
   AND a.txn_status = 'SUCCESS'
   AND LOWER(a.mid) in ('${mid}');`;
+}
+
+// NAYI RECON QUERY 📊
+function buildReconSQL(mid, s, e) {
+  return `SELECT 
+    DATE(updated_date) AS settled_date,
+    utr_no AS UTR,
+    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) AS total_collected,
+    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) AS total_refund,
+    SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) AS total_chargeback,
+    SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) AS total_repayment,
+    SUM(COALESCE(commission, 0) + COALESCE(gst, 0)) AS total_mdr_gst,
+    (
+        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) 
+        - SUM(COALESCE(commission, 0) + COALESCE(gst, 0))
+    ) AS net_settled_amount
+FROM hive_offline.dwh.pg_olap
+WHERE LOWER(mid) IN ('${mid}')
+  AND DATE(transaction_date) >= DATE '${s}'
+  AND DATE(transaction_date) <= DATE '${e}'
+  AND ingest_date >= DATE '${s}'
+  AND status = 'SUCCESS'
+GROUP BY DATE(updated_date), utr_no
+ORDER BY settled_date ASC;`;
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -702,13 +731,16 @@ Analyze the user's input AND conversation history. Return EXACTLY ONE of the fol
 2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
 {"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-3. If user provides MID + Dates BUT DOES NOT specify settlement or transaction:
+3. If user provides MID + Dates + explicitly asks for "recon" or "reconciliation":
+{"intent": "recon", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+4. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
 {"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-4. If it's a general custom SQL query request:
+5. If it's a general custom SQL query request:
 {"intent": "custom", "sql": "...", "explanation": "..."}
 
-IMPORTANT RULE: If the user just replies "transaction" or "settlement" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON (Format 1 or 2).
+IMPORTANT RULE: If the user just replies "transaction", "settlement", or "recon" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON (Format 1, 2, or 3).
 Always LOWERCASE the mid in the JSON.
 RULES: Return ONLY valid JSON block.`;
 
@@ -732,7 +764,7 @@ RULES: Return ONLY valid JSON block.`;
         const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
         const p = JSON.parse(m[0]); 
         
-        if ((p.intent === 'settlement' || p.intent === 'transaction') && p.mid && p.start_date && p.end_date) {
+        if ((p.intent === 'settlement' || p.intent === 'transaction' || p.intent === 'recon') && p.mid && p.start_date && p.end_date) {
           
           const cleanMid = p.mid.trim().toLowerCase();
           
@@ -747,9 +779,12 @@ RULES: Return ONLY valid JSON block.`;
           if (p.intent === 'settlement') {
               sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
               typeName = 'Settlement';
-          } else {
+          } else if (p.intent === 'transaction') {
               sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
               typeName = 'Transaction';
+          } else if (p.intent === 'recon') {
+              sql = buildReconSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Reconciliation';
           }
 
           const explanation = `🤖 **Smart Detect:** Generating the standard **${typeName}** report for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.`;
@@ -766,7 +801,7 @@ RULES: Return ONLY valid JSON block.`;
           onMidInput(document.getElementById('mid-input'));
           document.getElementById('custom-date').checked = true;
 
-          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement Report or a Transaction (Txn) Report?**`;
+          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement, Transaction (Txn), or Recon Report?**`;
           
           addTextOnlyMsg(msg);
           chatHistory.push({ role: 'assistant', content: msg });
@@ -805,7 +840,7 @@ function clearChat() {
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
   
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"I can help you in updating SQL query😊!"</h2><p>I can instantly generate Settlement and Transaction reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div><div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Just type "txn" or "settlement" to decide.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"I can help you in updating SQL query😊!"</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to 31 dec"</div></div><div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Type "txn", "settlement" or "recon" to decide.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
