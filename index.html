@@ -32,7 +32,7 @@
     --accent-hover: #0369a1;
     --text: #0f172a;
     --muted: #64748b;
-    --sql-bg: #0f172a; /* Code block stays dark for readability */
+    --sql-bg: #0f172a; 
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   }
 
@@ -136,7 +136,6 @@
   #chat-container::-webkit-scrollbar { width:6px; }
   #chat-container::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
   
-  /* CUTE MASCOT WELCOME - FIXED TO PURE CSS EMOJI */
   .welcome-msg { text-align:center; padding:40px 20px; }
   .ginny-mascot { display: block; margin: 0 auto 16px auto; font-size: 70px; animation: happyLaugh 1.5s ease-in-out infinite; transform-origin: center bottom; }
   @keyframes happyLaugh {
@@ -168,10 +167,14 @@
   .msg-bubble { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; font-size:14px; line-height:1.6; color: var(--text); box-shadow: var(--shadow); }
   .msg.user .msg-bubble { background:var(--accent); border-color:var(--accent); color: #fff; }
 
-  /* SQL Block */
+  /* SQL Block & Accordion Toggle */
   .sql-block { background:var(--sql-bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-top:12px; box-shadow: var(--shadow); }
   .sql-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.2); }
   .sql-lang { font-size:12px; font-weight:600; color:#38bdf8; letter-spacing:0.5px; text-transform:uppercase; font-family:'Inter',sans-serif; }
+  
+  .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
+  .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
+
   .sql-actions { display:flex; gap:8px; }
   .copy-btn, .superset-btn { display:flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:4px; padding:4px 10px; color:var(--muted); font-size:12px; font-family:'Inter',sans-serif; font-weight:500; cursor:pointer; transition:all 0.15s; }
   .copy-btn:hover { color:var(--text); border-color:var(--text); }
@@ -179,7 +182,7 @@
   .superset-btn { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: var(--accent); }
   .superset-btn:hover { background: rgba(56,189,248,0.2); }
   
-  .sql-code {padding:16px; font-size:13px; line-height:1.7; color:#e2e8f0; white-space:pre; overflow:auto; word-break:normal; font-family:'JetBrains Mono',monospace;}
+  .sql-code {padding:16px; font-size:13px; line-height:1.7; color:#e2e8f0; white-space:pre; overflow:auto; word-break:normal; font-family:'JetBrains Mono',monospace; border-top: 1px solid rgba(255,255,255,0.05);}
   .kw { color:#f472b6; font-weight:600; }
   .str { color:#a7f3d0; }
   .num { color:#93c5fd; }
@@ -305,7 +308,7 @@
   <div id="chat-container">
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
-      <h2>"Give MID and duration, i will give you updated queries!"</h2>
+      <h2>"Tum mujhe MID do, mai tumhe query dunga!"</h2>
       <p>I can instantly generate Settlement and Transaction reports.</p>
       <div class="how-to">
         <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div>
@@ -786,7 +789,7 @@ RULES: Return ONLY valid JSON block.`;
   document.getElementById('query-input').focus();
 }
 
-// ── UI HELPERS ──
+// ── UI & ANIMATION HELPERS ──
 function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
 
 function clearChat() {
@@ -820,6 +823,36 @@ function addThinking() {
 
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
 
+// TYPING ANIMATION ENGINE 
+function typeHTML(element, html, callback) {
+  let i = 0;
+  element.innerHTML = '';
+  let text = '';
+  function type() {
+    if (i < html.length) {
+      let char = html.charAt(i);
+      text += char;
+      i++;
+      
+      // Fast forward if it's an HTML tag so it doesn't break rendering
+      if (char === '<') {
+         while(i < html.length && html.charAt(i-1) !== '>') {
+             text += html.charAt(i);
+             i++;
+         }
+         element.innerHTML = text;
+         type(); // No delay for tags
+      } else {
+         element.innerHTML = text;
+         setTimeout(type, 15); // Speed of typing in ms
+      }
+    } else {
+      if (callback) callback();
+    }
+  }
+  type();
+}
+
 function addTextOnlyMsg(text) {
   const div = document.createElement('div');
   div.className = 'msg assistant';
@@ -831,12 +864,14 @@ function addTextOnlyMsg(text) {
     <div class="msg-avatar">🧞‍♂️</div>
     <div class="msg-body">
       <div class="msg-bubble" style="background:var(--surface2); border-color:var(--accent); color:var(--text);">
-        ${formattedText}
+        <div class="typewriter-content"></div>
       </div>
     </div>
   `;
   document.getElementById('chat-container').appendChild(div);
-  scrollBottom();
+  
+  const contentBox = div.querySelector('.typewriter-content');
+  typeHTML(contentBox, formattedText);
 }
 
 function addAssistantMsg(sqlCode, explanation) {
@@ -845,39 +880,66 @@ function addAssistantMsg(sqlCode, explanation) {
   const id = 'copy-' + (++msgCount);
   const safeSql = encodeURIComponent(sqlCode);
 
+  let formattedExp = '';
+  if (explanation) {
+    formattedExp = escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>');
+  }
+
   div.innerHTML = `
     <div class="msg-avatar">🧞‍♂️</div>
     <div class="msg-body">
       ${explanation ? `
       <div class="explain-block">
         <div class="explain-label">💡 Information</div>
-        ${escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>')}
+        <div class="typewriter-content"></div>
       </div>` : ''}
 
-      <div class="sql-block">
-        <div class="sql-header">
-          <span class="sql-lang">⚡ Trino SQL</span>
-          <div class="sql-actions">
-            <button class="copy-btn" data-sql="${safeSql}" onclick="copyFullSQL(this)">
-              📋 Copy Query
-            </button>
-            <button class="superset-btn" data-sql="${safeSql}" onclick="openInSuperset(this)">
-              🚀 Open in Superset
-            </button>
+      <div class="sql-wrapper" style="display: none; opacity: 0; transition: opacity 0.5s;">
+        <div class="sql-block">
+          <div class="sql-header">
+            <span class="sql-lang">⚡ Trino SQL</span>
+            <button class="toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
+            <div class="sql-actions">
+              <button class="copy-btn" data-sql="${safeSql}" onclick="copyFullSQL(this)">📋 Copy</button>
+              <button class="superset-btn" data-sql="${safeSql}" onclick="openInSuperset(this)">🚀 Superset</button>
+            </div>
+          </div>
+          <div class="sql-code" style="display: none;">
+            ${highlightSQL(sqlCode)}
           </div>
         </div>
-        <div class="sql-code">
-          ${highlightSQL(sqlCode)}
-        </div>
-      </div>
-      <div class="ready-hint">
-        ✅ Ready · Ask something else or run again!
+        <div class="ready-hint">✅ Ready · Ask something else or run again!</div>
       </div>
     </div>
   `;
 
   document.getElementById('chat-container').appendChild(div);
-  scrollBottom();
+  
+  const contentBox = div.querySelector('.typewriter-content');
+  const sqlWrapper = div.querySelector('.sql-wrapper');
+
+  // Trigger typing first, then reveal the SQL block
+  if (explanation && contentBox) {
+    typeHTML(contentBox, formattedExp, () => {
+       sqlWrapper.style.display = 'block';
+       setTimeout(() => sqlWrapper.style.opacity = '1', 50);
+    });
+  } else {
+    sqlWrapper.style.display = 'block';
+    sqlWrapper.style.opacity = '1';
+  }
+}
+
+// EXPAND / COLLAPSE SQL BLOCK
+function toggleSql(btn) {
+  const codeBlock = btn.parentElement.nextElementSibling;
+  if (codeBlock.style.display === 'none') {
+    codeBlock.style.display = 'block';
+    btn.innerHTML = '🙈 Hide Query';
+  } else {
+    codeBlock.style.display = 'none';
+    btn.innerHTML = '👁️ Show Query';
+  }
 }
 
 function copyFullSQL(btn) {
@@ -886,7 +948,7 @@ function copyFullSQL(btn) {
     btn.textContent='✅ Copied!'; 
     btn.classList.add('copied'); 
     setTimeout(()=>{ 
-      btn.textContent='📋 Copy Query'; 
+      btn.textContent='📋 Copy'; 
       btn.classList.remove('copied'); 
     }, 2000); 
   });
