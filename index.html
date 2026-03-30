@@ -484,11 +484,11 @@ function generateSettlementQuery() {
 
 // ── TEMPLATES ──
 function buildTransactionSQL(mid, s, e) {
-  return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
+return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
     a.*
 FROM hive_offline.dwh.pg_olap a
-WHERE a.txn_started_at >= TIMESTAMP '${s} 00:00:00'
-  AND a.txn_started_at <= TIMESTAMP '${e} 23:59:59'
+WHERE a.txn_started_at >= TIMESTAMP '${s}'
+  AND a.txn_started_at <= TIMESTAMP '${e}'
   AND a.ingest_date >= DATE '${s}'
   AND a.txn_status = 'SUCCESS'
   AND LOWER(a.mid) in ('${mid}');`;
