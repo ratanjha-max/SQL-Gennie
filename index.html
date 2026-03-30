@@ -92,8 +92,8 @@
   .date-sep { font-size:14px; color:var(--muted); font-weight:700; }
   .mid-tag { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent); background:rgba(0,212,170,0.08); border:1px solid rgba(0,212,170,0.2); border-radius:6px; padding:3px 9px; display:none; }
   .mid-tag.show { display:inline-block; }
-  .btn-generate { background:var(--accent); color:#0a0a0f; border:none; border-radius:8px; padding:8px 16px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; margin-left:auto; }
-  .btn-generate:hover { background:#00f0c0; box-shadow:0 0 14px rgba(0,212,170,0.3); }
+  .btn-generate { background:rgba(0,186,242,0.1); color:#00baf2; border:1px solid rgba(0,186,242,0.3); border-radius:8px; padding:8px 16px; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; margin-left:auto; }
+  .btn-generate:hover { background:rgba(0,186,242,0.2); }
 
   /* DATE TOGGLE */
   .date-toggle { display: flex; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 32px; }
@@ -189,8 +189,8 @@
         <div class="login-tagline">AI-powered SQL assistant for Paytm's Hive/Trino data stack.</div>
       </div>
       <div class="login-features">
-        <div class="login-feature"><div class="feat-icon">⚡</div>Instant settlement queries</div>
-        <div class="login-feature"><div class="feat-icon">📅</div>Custom date range picker</div>
+        <div class="login-feature"><div class="feat-icon">⚡</div>Instant settlement & txn queries</div>
+        <div class="login-feature"><div class="feat-icon">🤖</div>Smart NLP intent router</div>
         <div class="login-feature"><div class="feat-icon">🔡</div>Auto lowercase MID</div>
         <div class="login-feature"><div class="feat-icon">🚀</div>One-click open in Superset</div>
       </div>
@@ -251,7 +251,7 @@
     <span class="date-sep">→</span>
     <span class="param-label">To</span>
     <input class="date-input" id="date-to" type="date" />
-    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">⚡ Generate</button>
+    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">⚡ Run Settlement</button>
   </div>
 
   <div id="schema-panel">
@@ -263,19 +263,19 @@
   <div id="chat-container">
     <div class="welcome-msg" id="welcome">
       <span class="genie-icon">🧞</span>
-      <h2>Settlement Query Assistant</h2>
-      <p>Ask me anything! Try typing: <b>"1 april 2025 to 31 dec 2026 for mid qugeem32601181231171"</b></p>
+      <h2>Smart Query Assistant</h2>
+      <p>I can instantly generate Settlement and Transaction reports.</p>
       <div class="how-to">
-        <div class="how-step"><div class="step-num">🤖</div><div class="step-title">Smart Chat</div><div class="step-desc">Just type MID and dates in plain English.</div></div>
-        <div class="how-step"><div class="step-num">📅</div><div class="step-title">Quick Picks</div><div class="step-desc">Use the FY 25-26 toggle to autofill dates.</div></div>
-        <div class="how-step"><div class="step-num">⚡</div><div class="step-title">Generate</div><div class="step-desc">Instantly gives you the flawless Trino query.</div></div>
+        <div class="how-step"><div class="step-num">🤖</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div>
+        <div class="how-step"><div class="step-num">💬</div><div class="step-title">I'll remember</div><div class="step-desc">If I ask for report type, just say "txn" or "settlement".</div></div>
+        <div class="how-step"><div class="step-num">✅</div><div class="step-title">Zero Errors</div><div class="step-desc">I automatically format dates and lowercase MIDs.</div></div>
       </div>
     </div>
   </div>
 
   <div class="input-bar">
     <div class="input-row">
-      <textarea id="query-input" placeholder="Ask a custom query or paste a MID with dates here..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <textarea id="query-input" placeholder="Type a MID and dates, or ask for a custom query..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
       </button>
@@ -394,7 +394,7 @@ function toggleSchema() {
   document.getElementById('chat-container').style.marginLeft = isOpen ? '0' : '280px';
 }
 
-// ── SETTLEMENT QUERY — uses hardcoded template ──
+// ── MANUAL GENERATE BUTTON ──
 function generateSettlementQuery() {
   const mid = document.getElementById('mid-input').value.trim().toLowerCase();
   const startDate = document.getElementById('date-from').value;
@@ -407,7 +407,7 @@ function generateSettlementQuery() {
   chatHistory = [];
   clearChatUI();
 
-  const userText = `Settlement query · MID: ${mid} · ${fmtDisplay(startDate)} → ${fmtDisplay(endDate)}`;
+  const userText = `Manual Settlement query · MID: ${mid} · ${fmtDisplay(startDate)} → ${fmtDisplay(endDate)}`;
   addUserMsg(userText);
 
   const sql = buildSettlementSQL(mid, startDate, endDate);
@@ -417,7 +417,19 @@ function generateSettlementQuery() {
 
   const btn = document.getElementById('generate-btn');
   btn.textContent = '✅ Generated!';
-  setTimeout(() => btn.textContent = '⚡ Generate', 2000);
+  setTimeout(() => btn.textContent = '⚡ Run Settlement', 2000);
+}
+
+// ── TEMPLATES ──
+function buildTransactionSQL(mid, s, e) {
+  return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
+    a.*
+FROM hive_offline.dwh.pg_olap a
+WHERE a.txn_started_at >= TIMESTAMP '${s} 00:00:00'
+  AND a.txn_started_at <= TIMESTAMP '${e} 23:59:59'
+  AND a.ingest_date >= DATE '${s}'
+  AND a.txn_status = 'SUCCESS'
+  AND LOWER(a.mid) in ('${mid}');`; // Lowercase guaranteed by JS
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -615,25 +627,29 @@ async function sendMessage() {
   chatHistory.push({ role:'user', content:text });
   addThinking();
   
-  const mid = document.getElementById('mid-input').value.trim().toLowerCase();
-  const s = document.getElementById('date-from').value;
-  const e = document.getElementById('date-to').value;
   const schema = document.getElementById('schema-input').value.trim();
   
-  // 🧠 SMART PROMPT: NLP Router for extracting intent
+  // 🧠 SMART PROMPT: 3-way NLP Router 
   const sys = `You are SQL Genie, expert Trino/Hive SQL assistant for Paytm's internal data.
-DB: hive_offline, schema: stsservicev2, engine: Trino.
 
 CRITICAL INSTRUCTION FOR INTENT ROUTING:
-If the user provides a MID (a long alphanumeric string) and a date range (like "1 april 2025 to 31 dec 2026"), OR asks for a "settlement query", DO NOT write the SQL yourself. 
-Instead, act as an entity extractor and return EXACTLY this JSON format:
+Analyze the user's input AND conversation history. Return EXACTLY ONE of the following JSON formats:
+
+1. If user provides MID + Dates + explicitly asks for "settlement":
 {"intent": "settlement", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-If it is any OTHER custom query, generate the SQL and return EXACTLY this JSON format:
+2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
+{"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+3. If user provides MID + Dates BUT DOES NOT specify settlement or transaction:
+{"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+4. If it's a general custom SQL query request:
 {"intent": "custom", "sql": "...", "explanation": "..."}
 
-${schema ? 'USER SCHEMA:\n' + schema + '\n' : ''}
-RULES: Return ONLY valid JSON, no markdown blocks around it if possible.`;
+IMPORTANT RULE: If the user just replies "transaction" or "settlement" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON (Format 1 or 2).
+Always LOWERCASE the mid in the JSON.
+RULES: Return ONLY valid JSON block.`;
 
   const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
   
@@ -650,35 +666,64 @@ RULES: Return ONLY valid JSON, no markdown blocks around it if possible.`;
       addErrorMsg('API Error: '+data.error.message); 
     } else {
       const raw = data.choices?.[0]?.message?.content||'';
-      chatHistory.push({role:'assistant', content:raw});
       
       try { 
         const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
         const p = JSON.parse(m[0]); 
         
-        // 🚀 SMART ROUTING DETECTS SETTLEMENT
-        if (p.intent === 'settlement' && p.mid && p.start_date && p.end_date) {
+        // 🚀 SMART ROUTING DETECTS SETTLEMENT OR TRANSACTION
+        if ((p.intent === 'settlement' || p.intent === 'transaction') && p.mid && p.start_date && p.end_date) {
           
           const cleanMid = p.mid.trim().toLowerCase();
           
-          // Auto-fill top inputs
+          // Auto-fill top inputs so user sees the extracted data
           document.getElementById('mid-input').value = cleanMid;
           document.getElementById('date-from').value = p.start_date;
           document.getElementById('date-to').value = p.end_date;
           onMidInput(document.getElementById('mid-input'));
           document.getElementById('custom-date').checked = true;
           
-          const sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
-          const explanation = `🤖 **Smart Detect:** I found a settlement request for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`. Generating the standard Paytm settlement template...`;
+          let sql = '';
+          let typeName = '';
+          if (p.intent === 'settlement') {
+              sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Settlement';
+          } else {
+              sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Transaction';
+          }
+
+          const explanation = `🤖 **Smart Detect:** Generating the standard Paytm **${typeName}** report for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.`;
           
           addAssistantMsg(sql, explanation);
+          
+          // Push to history as JSON so LLM knows what happened
+          chatHistory.push({role:'assistant', content:raw});
 
+        } else if (p.intent === 'clarify' && p.mid && p.start_date && p.end_date) {
+          // 🧐 ASK FOR CLARIFICATION
+          const cleanMid = p.mid.trim().toLowerCase();
+          
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          onMidInput(document.getElementById('mid-input'));
+          document.getElementById('custom-date').checked = true;
+
+          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement Report or a Transaction (Txn) Report?**`;
+          
+          addTextOnlyMsg(msg);
+          
+          // Overwrite the history's last message to be the friendly text so the LLM understands the context
+          chatHistory.push({ role: 'assistant', content: msg });
         } else {
           addAssistantMsg(p.sql || raw, p.explanation || ''); 
+          chatHistory.push({role:'assistant', content:raw});
         }
       }
       catch { 
         addAssistantMsg(raw, ''); 
+        chatHistory.push({role:'assistant', content:raw});
       }
     }
   } catch(err) { 
@@ -706,7 +751,7 @@ function clearChat() {
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
   
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><span class="genie-icon">🧞</span><h2>Settlement Query Assistant</h2><p>Ask me anything! Try typing: <b>"1 april 2025 to 31 dec 2026 for mid qugeem32601181231171"</b></p><div class="how-to"><div class="how-step"><div class="step-num">🤖</div><div class="step-title">Smart Chat</div><div class="step-desc">Just type MID and dates in plain English.</div></div><div class="how-step"><div class="step-num">📅</div><div class="step-title">Quick Picks</div><div class="step-desc">Use the FY 25-26 toggle to autofill dates.</div></div><div class="how-step"><div class="step-num">⚡</div><div class="step-title">Generate</div><div class="step-desc">Instantly gives you the flawless Trino query.</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><span class="genie-icon">🧞</span><h2>Smart Query Assistant</h2><p>I can instantly generate Settlement and Transaction reports.</p><div class="how-to"><div class="how-step"><div class="step-num">🤖</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to 31 dec"</div></div><div class="how-step"><div class="step-num">💬</div><div class="step-title">I'll remember</div><div class="step-desc">If I ask for report type, just say "txn" or "settlement".</div></div><div class="how-step"><div class="step-num">✅</div><div class="step-title">Zero Errors</div><div class="step-desc">I automatically format dates and lowercase MIDs.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -715,18 +760,38 @@ function addUserMsg(t) {
   d.innerHTML=`<div class="msg-avatar">👤</div><div class="msg-body"><div class="msg-bubble">${escHtml(t)}</div></div>`;
   document.getElementById('chat-container').appendChild(d); scrollBottom();
 }
+
 function addThinking() {
   const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
-  d.innerHTML=`<div class="msg-avatar">🧞</div><div class="msg-body"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Generating SQL...</div></div>`;
+  d.innerHTML=`<div class="msg-avatar">🧞</div><div class="msg-body"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Generating response...</div></div>`;
   document.getElementById('chat-container').appendChild(d); scrollBottom();
 }
+
 function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
+
+function addTextOnlyMsg(text) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  formattedText = formattedText.replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>');
+  formattedText = formattedText.replace(/\n/g, '<br>');
+
+  div.innerHTML = `
+    <div class="msg-avatar">🧞</div>
+    <div class="msg-body">
+      <div class="msg-bubble" style="background:rgba(0,212,170,0.08); border-color:rgba(0,212,170,0.25);">
+        ${formattedText}
+      </div>
+    </div>
+  `;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
 
 function addAssistantMsg(sqlCode, explanation) {
   const div = document.createElement('div');
   div.className = 'msg assistant';
   const id = 'copy-' + (++msgCount);
-
   const safeSql = encodeURIComponent(sqlCode);
 
   div.innerHTML = `
@@ -734,8 +799,8 @@ function addAssistantMsg(sqlCode, explanation) {
     <div class="msg-body">
       ${explanation ? `
       <div class="explain-block">
-        <div class="explain-label">💡 What this does</div>
-        ${escHtml(explanation)}
+        <div class="explain-label">💡 Information</div>
+        ${escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>')}
       </div>` : ''}
 
       <div class="sql-block">
@@ -758,7 +823,7 @@ function addAssistantMsg(sqlCode, explanation) {
         </div>
       </div>
       <div class="ready-hint">
-        ✅ Ready · Enter new MID & dates for next query
+        ✅ Ready · Ask something else or run again!
       </div>
     </div>
   `;
@@ -801,7 +866,7 @@ function addErrorMsg(msg) {
 }
 
 function highlightSQL(sql) {
-  const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL'];
+  const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL','TIMESTAMP'];
   let out=escHtml(sql);
   out=out.replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
   kws.sort((a,b)=>b.length-a.length).forEach(kw=>{ const re=new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`,'gi'); out=out.replace(re,'<span class="kw">$1</span>'); });
@@ -810,7 +875,7 @@ function highlightSQL(sql) {
   return out;
 }
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function scrollBottom(){ /* Auto-scroll disabled */ }
+function scrollBottom(){ /* Auto-scroll is disabled */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
