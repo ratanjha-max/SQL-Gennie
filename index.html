@@ -251,7 +251,7 @@
     <span class="date-sep">→</span>
     <span class="param-label">To</span>
     <input class="date-input" id="date-to" type="date" />
-    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">⚡ Generate Settlement Query</button>
+    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">⚡ Generate</button>
   </div>
 
   <div id="schema-panel">
@@ -264,24 +264,24 @@
     <div class="welcome-msg" id="welcome">
       <span class="genie-icon">🧞</span>
       <h2>Settlement Query Assistant</h2>
-      <p>Enter a MID and pick a date range above, then click ⚡ Generate — your Trino SQL is ready instantly.</p>
+      <p>Ask me anything! Try typing: <b>"1 april 2025 to 31 dec 2026 for mid qugeem32601181231171"</b></p>
       <div class="how-to">
-        <div class="how-step"><div class="step-num">1️⃣</div><div class="step-title">Enter MID</div><div class="step-desc">Auto-converts to lowercase</div></div>
-        <div class="how-step"><div class="step-num">2️⃣</div><div class="step-title">Pick Date Range</div><div class="step-desc">e.g. 1 Jan 2024 → 31 Mar 2025</div></div>
-        <div class="how-step"><div class="step-num">3️⃣</div><div class="step-title">Generate & Run</div><div class="step-desc">Copy SQL → Superset → Run</div></div>
+        <div class="how-step"><div class="step-num">🤖</div><div class="step-title">Smart Chat</div><div class="step-desc">Just type MID and dates in plain English.</div></div>
+        <div class="how-step"><div class="step-num">📅</div><div class="step-title">Quick Picks</div><div class="step-desc">Use the FY 25-26 toggle to autofill dates.</div></div>
+        <div class="how-step"><div class="step-num">⚡</div><div class="step-title">Generate</div><div class="step-desc">Instantly gives you the flawless Trino query.</div></div>
       </div>
     </div>
   </div>
 
   <div class="input-bar">
     <div class="input-row">
-      <textarea id="query-input" placeholder="Or ask a custom query… e.g. Show failed UPI transactions for last month" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <textarea id="query-input" placeholder="Ask a custom query or paste a MID with dates here..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
       </button>
     </div>
     <div class="input-hints">
-      <span>⏎ Send · Shift+⏎ New line · Use ⚡ above for settlement queries</span>
+      <span>⏎ Send · Shift+⏎ New line</span>
       <span>Groq · Llama 3.3 70B · Free</span>
     </div>
   </div>
@@ -291,12 +291,11 @@
 // ══════════════════════════════════════════════════
 //  CONFIG  — edit only this section
 // ══════════════════════════════════════════════════
-const GROQ_API_KEY = 'YOUR_GROQ_API_KEY_HERE'; // ← paste your gsk_... key here bhai!!!
+const GROQ_API_KEY = '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'; //
 
 const USERS = {
   'ratan.jha' : 'paytm@123',
   'admin'     : 'admin@123',
-  // Add teammates: 'firstname.lastname': 'their_password'
 };
 // ══════════════════════════════════════════════════
 
@@ -333,7 +332,6 @@ function launchApp(user) {
   document.getElementById('app').classList.add('visible');
   document.getElementById('user-label').textContent = user;
   document.getElementById('user-avatar').textContent = user[0].toUpperCase();
-  // Default dates: last 1 year
   const today = new Date();
   const lastYear = new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-to').value = fmt(today);
@@ -364,22 +362,15 @@ function handleDateMode(radio) {
   const toInput = document.getElementById('date-to');
 
   if (radio.value === 'fy') {
-    // FY select hone par custom dates ko memory mein save kar lo
     savedCustomFrom = fromInput.value;
     savedCustomTo = toInput.value;
-
-    // Exact FY dates set karo (YYYY-MM-DD format)
     fromInput.value = '2025-04-01';
     toInput.value = '2026-03-31';
-
-    // Inputs ko lock (disable) kar do
     fromInput.disabled = true;
     toInput.disabled = true;
   } else {
-    // Custom wapas aane par purani dates restore kardo aur unlock kardo
     if (savedCustomFrom) fromInput.value = savedCustomFrom;
     if (savedCustomTo) toInput.value = savedCustomTo;
-    
     fromInput.disabled = false;
     toInput.disabled = false;
   }
@@ -403,7 +394,7 @@ function toggleSchema() {
   document.getElementById('chat-container').style.marginLeft = isOpen ? '0' : '280px';
 }
 
-// ── SETTLEMENT QUERY — uses hardcoded template, no AI needed ──
+// ── SETTLEMENT QUERY — uses hardcoded template ──
 function generateSettlementQuery() {
   const mid = document.getElementById('mid-input').value.trim().toLowerCase();
   const startDate = document.getElementById('date-from').value;
@@ -420,13 +411,13 @@ function generateSettlementQuery() {
   addUserMsg(userText);
 
   const sql = buildSettlementSQL(mid, startDate, endDate);
-  const explanation = `Settlement report for '${mid}' from ${fmtDisplay(startDate)} to ${fmtDisplay(endDate)}. Fetches all FUND_SUCCESS transfers across STS and wallet, joins with pg_olap transactions, deduplicates by txn_id, and enriches with bank details.`;
+  const explanation = `Settlement report for '${mid}' from ${fmtDisplay(startDate)} to ${fmtDisplay(endDate)}. Fetches all FUND_SUCCESS transfers across STS and wallet.`;
 
   addAssistantMsg(sql, explanation);
 
   const btn = document.getElementById('generate-btn');
   btn.textContent = '✅ Generated!';
-  setTimeout(() => btn.textContent = '⚡ Generate Settlement Query', 2000);
+  setTimeout(() => btn.textContent = '⚡ Generate', 2000);
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -611,29 +602,41 @@ LEFT JOIN (
 ) k ON k1.mid = k.mid;`;
 }
 
-// ── CUSTOM QUERY ──
+// ── CUSTOM QUERY & VIRTUAL BOT ──
 async function sendMessage() {
   const input = document.getElementById('query-input');
   const text = input.value.trim();
   if (!text) return;
   input.value = ''; autoResize(input);
   document.getElementById('send-btn').disabled = true;
+  
   const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
   addUserMsg(text);
   chatHistory.push({ role:'user', content:text });
   addThinking();
+  
   const mid = document.getElementById('mid-input').value.trim().toLowerCase();
   const s = document.getElementById('date-from').value;
   const e = document.getElementById('date-to').value;
   const schema = document.getElementById('schema-input').value.trim();
-  const ctx = (mid||s) ? `\nContext — MID: ${mid||'not set'}, From: ${s||'?'}, To: ${e||'?'}. Apply if relevant.` : '';
+  
+  // 🧠 SMART PROMPT: NLP Router for extracting intent
   const sys = `You are SQL Genie, expert Trino/Hive SQL assistant for Paytm's internal data.
 DB: hive_offline, schema: stsservicev2, engine: Trino.
-Key tables: hive_offline.dwh.pg_olap, hive_offline.stsservicev2.settlement_transfer_snapshot_v3, hive_offline.stsservicev2.settlement_request_snapshot_v3, hive_offline.stsservicev2.bank_transfer_response_snapshot_v3, hive_offline.pg.entity_info_snapshot_v3.
-${schema?'USER SCHEMA:\n'+schema+'\n':''}
-RULES: Always LOWER(mid). Use DATE 'YYYY-MM-DD'. Add dl_last_updated <= CURRENT_DATE for snapshot tables.
-Return ONLY JSON: {"sql":"...","explanation":"..."}${ctx}`;
+
+CRITICAL INSTRUCTION FOR INTENT ROUTING:
+If the user provides a MID (a long alphanumeric string) and a date range (like "1 april 2025 to 31 dec 2026"), OR asks for a "settlement query", DO NOT write the SQL yourself. 
+Instead, act as an entity extractor and return EXACTLY this JSON format:
+{"intent": "settlement", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+If it is any OTHER custom query, generate the SQL and return EXACTLY this JSON format:
+{"intent": "custom", "sql": "...", "explanation": "..."}
+
+${schema ? 'USER SCHEMA:\n' + schema + '\n' : ''}
+RULES: Return ONLY valid JSON, no markdown blocks around it if possible.`;
+
   const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
+  
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -642,14 +645,47 @@ Return ONLY JSON: {"sql":"...","explanation":"..."}${ctx}`;
     });
     const data = await res.json();
     removeThinking();
-    if (data.error) { addErrorMsg('API Error: '+data.error.message); }
-    else {
+    
+    if (data.error) { 
+      addErrorMsg('API Error: '+data.error.message); 
+    } else {
       const raw = data.choices?.[0]?.message?.content||'';
-      chatHistory.push({role:'assistant',content:raw});
-      try { const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]); addAssistantMsg(p.sql||raw,p.explanation||''); }
-      catch { addAssistantMsg(raw,''); }
+      chatHistory.push({role:'assistant', content:raw});
+      
+      try { 
+        const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
+        const p = JSON.parse(m[0]); 
+        
+        // 🚀 SMART ROUTING DETECTS SETTLEMENT
+        if (p.intent === 'settlement' && p.mid && p.start_date && p.end_date) {
+          
+          const cleanMid = p.mid.trim().toLowerCase();
+          
+          // Auto-fill top inputs
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          onMidInput(document.getElementById('mid-input'));
+          document.getElementById('custom-date').checked = true;
+          
+          const sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
+          const explanation = `🤖 **Smart Detect:** I found a settlement request for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`. Generating the standard Paytm settlement template...`;
+          
+          addAssistantMsg(sql, explanation);
+
+        } else {
+          addAssistantMsg(p.sql || raw, p.explanation || ''); 
+        }
+      }
+      catch { 
+        addAssistantMsg(raw, ''); 
+      }
     }
-  } catch(err) { removeThinking(); addErrorMsg('Network error: '+err.message); }
+  } catch(err) { 
+    removeThinking(); 
+    addErrorMsg('Network error: '+err.message); 
+  }
+  
   document.getElementById('send-btn').disabled = false;
   document.getElementById('query-input').focus();
 }
@@ -662,7 +698,6 @@ function clearChat() {
   document.getElementById('mid-input').value = '';
   document.getElementById('mid-tag').classList.remove('show');
   
-  // Custom pe reset karke basic dates wapas laaye
   document.getElementById('custom-date').checked = true;
   document.getElementById('date-from').disabled = false;
   document.getElementById('date-to').disabled = false;
@@ -671,7 +706,7 @@ function clearChat() {
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
   
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><span class="genie-icon">🧞</span><h2>Settlement Query Assistant</h2><p>Enter a MID and pick a date range above, then click ⚡ Generate.</p><div class="how-to"><div class="how-step"><div class="step-num">1️⃣</div><div class="step-title">Enter MID</div><div class="step-desc">Auto-converts to lowercase</div></div><div class="how-step"><div class="step-num">2️⃣</div><div class="step-title">Pick Date Range</div><div class="step-desc">e.g. 1 Jan 2024 → 31 Mar 2025</div></div><div class="how-step"><div class="step-num">3️⃣</div><div class="step-title">Generate & Run</div><div class="step-desc">Copy SQL → Superset → Run</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><span class="genie-icon">🧞</span><h2>Settlement Query Assistant</h2><p>Ask me anything! Try typing: <b>"1 april 2025 to 31 dec 2026 for mid qugeem32601181231171"</b></p><div class="how-to"><div class="how-step"><div class="step-num">🤖</div><div class="step-title">Smart Chat</div><div class="step-desc">Just type MID and dates in plain English.</div></div><div class="how-step"><div class="step-num">📅</div><div class="step-title">Quick Picks</div><div class="step-desc">Use the FY 25-26 toggle to autofill dates.</div></div><div class="how-step"><div class="step-num">⚡</div><div class="step-title">Generate</div><div class="step-desc">Instantly gives you the flawless Trino query.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -692,7 +727,6 @@ function addAssistantMsg(sqlCode, explanation) {
   div.className = 'msg assistant';
   const id = 'copy-' + (++msgCount);
 
-  // Safely encode SQL to prevent quotes from breaking HTML attributes
   const safeSql = encodeURIComponent(sqlCode);
 
   div.innerHTML = `
@@ -776,8 +810,7 @@ function highlightSQL(sql) {
   return out;
 }
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-/* Auto-scroll is disabled below */
-function scrollBottom(){ /* c=document.getElementById('chat-container'); c.scrollTop=c.scrollHeight; */ }
+function scrollBottom(){ /* Auto-scroll disabled */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
