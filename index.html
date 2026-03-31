@@ -315,7 +315,7 @@
   <div id="chat-container">
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
-      <h2>"I can share the updated query!"</h2>
+      <h2>I can share the updated query</h2>
       <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
       <div class="how-to">
         <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div>
@@ -349,7 +349,7 @@
 // ══════════════════════════════════════════════════
 //  CONFIG  — edit only this section
 // ══════════════════════════════════════════════════
-const GROQ_API_KEY = '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'; //
+const GROQ_API_KEY = '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';
 
 const USERS = {
   'ratan.jha' : 'paytm@123',
@@ -494,28 +494,28 @@ WHERE a.txn_started_at >= TIMESTAMP '${s}'
 
 function buildReconSQL(mid, s, e) {
   return `SELECT 
-    DATE(updated_date) AS settled_date,
+    CAST(DATE(updated_date) AS VARCHAR) AS settled_date,
     utr_no AS UTR,
-    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) AS total_collected,
-    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) AS total_refund,
+    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_collected,
+    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_refund,
     SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) AS total_chargeback,
     SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) AS total_repayment,
-    SUM(COALESCE(commission, 0) + COALESCE(gst, 0)) AS total_mdr_gst,
+    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END) AS total_mdr_gst,
     (
-        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) 
+        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
         - SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) 
         - SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) 
-        - SUM(COALESCE(commission, 0) + COALESCE(gst, 0))
+        - SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END)
     ) AS net_settled_amount
 FROM hive_offline.dwh.pg_olap
 WHERE LOWER(mid) IN ('${mid}')
   AND DATE(transaction_date) >= DATE '${s}'
   AND DATE(transaction_date) <= DATE '${e}'
   AND ingest_date >= DATE '${s}'
-  AND status = 'SUCCESS'
+  AND (UPPER(status) = 'SUCCESS' OR UPPER(transaction_type) IN ('CHARGEBACK', 'REPAYMENT', 'REFUND'))
 GROUP BY DATE(updated_date), utr_no
-ORDER BY settled_date ASC;`;
+ORDER BY DATE(updated_date) ASC;`;
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -849,8 +849,13 @@ function processCSV(input) {
         const cols = rows[i].split(',');
         const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
 
-        const status = getVal(idxStatus);
-        if(status && status !== 'SUCCESS') continue; 
+        const status = getVal(idxStatus).toUpperCase();
+        const type = getVal(idxType).toUpperCase();
+        
+        // Include if SUCCESS or if it's a Chargeback/Refund/Repayment (these might not always be marked 'SUCCESS')
+        if (status !== 'SUCCESS' && !['CHARGEBACK', 'REPAYMENT', 'REFUND'].some(t => type.includes(t))) {
+            continue; 
+        }
 
         const rawDate = getVal(idxDate);
         if (!rawDate || rawDate === 'NaN') continue;
@@ -859,7 +864,6 @@ function processCSV(input) {
         const utr = getVal(idxUTR);
         if (!utr || utr === 'NaN') continue;
 
-        const type = getVal(idxType).toUpperCase();
         const amount = parseFloat(getVal(idxAmount)) || 0;
         const comm = parseFloat(getVal(idxComm)) || 0;
         const gst = parseFloat(getVal(idxGST)) || 0;
@@ -867,10 +871,10 @@ function processCSV(input) {
         const key = `${date}|${utr}`;
         if (!reconData[key]) reconData[key] = { date, utr, collected: 0, refund: 0, cb: 0, rep: 0, mdr_gst: 0 };
 
-        if (type.includes('ACQUIRING')) {
+        if (type.includes('ACQUIRING') && status === 'SUCCESS') {
           reconData[key].collected += amount;
           reconData[key].mdr_gst += (comm + gst);
-        } else if (type.includes('REFUND')) { reconData[key].refund += amount; }
+        } else if (type.includes('REFUND') && status === 'SUCCESS') { reconData[key].refund += amount; }
         else if (type.includes('CHARGEBACK')) { reconData[key].cb += amount; }
         else if (type.includes('REPAYMENT')) { reconData[key].rep += amount; }
       }
@@ -946,7 +950,7 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"I can share the updated query!"</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>I can share the updated query</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -1053,7 +1057,7 @@ function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function scrollBottom(){ /* Auto-scroll disabled */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
-function showToast(msg){ const t=document.getElementById('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
 </script>
 </body>
 </html>
