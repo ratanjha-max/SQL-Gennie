@@ -315,10 +315,1036 @@
   <div id="chat-container">
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
-      <h2>"I can help you in updating SQL query😊!"</h2>
+      <h2>"I can help you in updating SQL query!"</h2>
       <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
       <div class="how-to">
-        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to 31 dec"</div></div>
+        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div>
+        <div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div>
+        <div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <div class="input-row">
+      <label class="btn-upload" title="Upload CSV for Auto Recon">
+        <input type="file" id="csv-upload" accept=".csv" onchange="processCSV(this)" style="display:none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+      </label>
+
+      <textarea id="query-input" placeholder="Type a MID and dates, ask for a query, or upload a CSV..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+    <div class="input-hints">
+      <span>⏎ Send &nbsp;·&nbsp; Shift+⏎ New line</span>
+      <span>Powered by Groq & Llama 3.3</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIG  — edit only this section
+// ══════════════════════════════════════════════════
+const GROQ_API_KEY = 'YOUR_GROQ_API_KEY_HERE'; // ← PASTE YOUR KEY HERE! (gsk_...)
+
+const USERS = {
+  'ratan.jha' : 'paytm@123',
+  'admin'     : 'admin@123',
+};
+// ══════════════════════════════════════════════════
+
+let currentUser = '';
+let chatHistory = [];
+let msgCount = 0;
+
+const fmt = d => (d instanceof Date ? d : new Date(d+'T00:00:00')).toISOString().split('T')[0];
+const fmtDisplay = ds => new Date(ds+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const fmtMoney = val => '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+// ── THEME TOGGLE ──
+function toggleTheme() {
+  const body = document.body;
+  const btn = document.getElementById('theme-toggle');
+  body.classList.toggle('light-mode');
+  const isLight = body.classList.contains('light-mode');
+  localStorage.setItem('ginny_theme', isLight ? 'light' : 'dark');
+  btn.innerHTML = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+}
+
+// ── AUTH ──
+function doLogin() {
+  const raw = document.getElementById('login-user').value.trim().toLowerCase();
+  const user = raw.replace(/@paytm\.com$|@paytmpayments\.com$/,'');
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+
+  if (USERS[user] && USERS[user] === pass) {
+    currentUser = user;
+    sessionStorage.setItem('sguser', user);
+    errEl.classList.remove('show');
+    launchApp(user);
+  } else {
+    errEl.classList.add('show');
+    const pi = document.getElementById('login-pass');
+    pi.classList.add('shake');
+    setTimeout(() => pi.classList.remove('shake'), 500);
+  }
+}
+
+function launchApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('user-label').textContent = user;
+  document.getElementById('user-avatar').textContent = user[0].toUpperCase();
+  const today = new Date();
+  const lastYear = new Date(today); lastYear.setFullYear(today.getFullYear()-1);
+  document.getElementById('date-to').value = fmt(today);
+  document.getElementById('date-from').value = fmt(lastYear);
+}
+
+function doLogout() {
+  sessionStorage.removeItem('sguser');
+  currentUser = ''; chatHistory = [];
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').classList.remove('show');
+}
+
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('sguser');
+  if (saved && USERS[saved]) { currentUser = saved; launchApp(saved); }
+  const savedTheme = localStorage.getItem('ginny_theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('theme-toggle').innerHTML = '🌙 Dark Mode';
+  }
+});
+
+function handleDateMode(radio) {
+  const fromInput = document.getElementById('date-from');
+  const toInput = document.getElementById('date-to');
+  if (radio.value === 'fy') {
+    savedCustomFrom = fromInput.value;
+    savedCustomTo = toInput.value;
+    fromInput.value = '2025-04-01';
+    toInput.value = '2026-03-31';
+    fromInput.disabled = true;
+    toInput.disabled = true;
+  } else {
+    if (savedCustomFrom) fromInput.value = savedCustomFrom;
+    if (savedCustomTo) toInput.value = savedCustomTo;
+    fromInput.disabled = false;
+    toInput.disabled = false;
+  }
+}
+
+function onMidInput(el) {
+  el.value = el.value.toLowerCase();
+  const tag = document.getElementById('mid-tag');
+  if (el.value.trim()) { tag.textContent = '✓ ' + el.value.trim(); tag.classList.add('show'); }
+  else tag.classList.remove('show');
+}
+
+function toggleSchema() {
+  const panel = document.getElementById('schema-panel');
+  const btn = document.getElementById('schema-toggle');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active', !isOpen);
+  document.getElementById('chat-container').style.marginLeft = isOpen ? '0' : '300px';
+}
+
+function generateSettlementQuery() {
+  const mid = document.getElementById('mid-input').value.trim().toLowerCase();
+  const startDate = document.getElementById('date-from').value;
+  const endDate = document.getElementById('date-to').value;
+  if (!mid) { showToast('⚠️ Please enter a MID'); return; }
+  if (!startDate || !endDate) { showToast('⚠️ Please select From and To dates'); return; }
+  if (startDate > endDate) { showToast('⚠️ From date must be before To date'); return; }
+
+  chatHistory = []; clearChatUI();
+  addUserMsg(`Manual Settlement query · MID: ${mid} · ${fmtDisplay(startDate)} → ${fmtDisplay(endDate)}`);
+  
+  const sql = buildSettlementSQL(mid, startDate, endDate);
+  const explanation = `Settlement report for '${mid}' from ${fmtDisplay(startDate)} to ${fmtDisplay(endDate)}. Fetches all FUND_SUCCESS transfers across STS and wallet.`;
+  addAssistantMsg(sql, explanation);
+
+  const btn = document.getElementById('generate-btn');
+  btn.textContent = 'Generated!';
+  setTimeout(() => btn.textContent = 'Run Settlement', 2000);
+}
+
+// ── TEMPLATES ──
+function buildTransactionSQL(mid, s, e) {
+  return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
+    a.*
+FROM hive_offline.dwh.pg_olap a
+WHERE a.txn_started_at >= TIMESTAMP '${s}'
+  AND a.txn_started_at <= TIMESTAMP '${e}'
+  AND a.ingest_date >= DATE '${s}'
+  AND a.txn_status = 'SUCCESS'
+  AND LOWER(a.mid) in ('${mid}');`;
+}
+
+function buildReconSQL(mid, s, e) {
+  return `SELECT 
+    DATE(updated_date) AS settled_date,
+    utr_no AS UTR,
+    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) AS total_collected,
+    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) AS total_refund,
+    SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) AS total_chargeback,
+    SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) AS total_repayment,
+    SUM(COALESCE(commission, 0) + COALESCE(gst, 0)) AS total_mdr_gst,
+    (
+        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) 
+        - SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) 
+        - SUM(COALESCE(commission, 0) + COALESCE(gst, 0))
+    ) AS net_settled_amount
+FROM hive_offline.dwh.pg_olap
+WHERE LOWER(mid) IN ('${mid}')
+  AND DATE(transaction_date) >= DATE '${s}'
+  AND DATE(transaction_date) <= DATE '${e}'
+  AND ingest_date >= DATE '${s}'
+  AND status = 'SUCCESS'
+GROUP BY DATE(updated_date), utr_no
+ORDER BY settled_date ASC;`;
+}
+
+function buildSettlementSQL(mid, s, e) {
+  return `SELECT 
+    k1.mid,
+    txn_id,
+    txn_started_at,
+    order_id,
+    payment_type,
+    payment_mode,
+    txn_amount,
+    settlement_date,
+    settled_amount,
+    fund_type,
+    UTR,
+    ESN,
+    card_category AS bank
+FROM (
+    SELECT
+        mid,
+        txn_id,
+        txn_started_at,
+        order_id,
+        payment_type,
+        payment_mode,
+        txn_amount,
+        settlement_date,
+        settled_amount,
+        fund_type,
+        UTR,
+        bank_name,
+        card_category,
+        CONCAT('#', CAST(settlement_esn AS VARCHAR)) AS ESN
+    FROM (
+        SELECT
+            mid,
+            CONCAT('#', txn_id) AS txn_id,
+            txn_started_at,
+            CONCAT('#', order_id) AS order_id,
+            payment_type,
+            payment_mode,
+            txn_amount,
+            settlement_date,
+            settlement_esn,
+            settled_amount,
+            bank_name,
+            card_category,
+            fund_type,
+            CONCAT('#', UTR) AS UTR
+        FROM (
+            SELECT
+                mid,
+                txn_id,
+                txn_started_at,
+                txn_amount,
+                order_id,
+                payment_type,
+                payment_mode,
+                settlement_date,
+                settlement_esn,
+                settled_amount,
+                fund_type,
+                UTR,
+                bank_name,
+                card_category,
+                ROW_NUMBER() OVER (
+                    PARTITION BY txn_id
+                    ORDER BY settlement_date ASC
+                ) AS srno
+            FROM (
+                SELECT
+                    a.mid,
+                    a.txn_id,
+                    a.txn_started_at,
+                    a.txn_amount,
+                    order_id,
+                    a.payment_type,
+                    a.payment_mode,
+                    b.created_date AS settlement_date,
+                    b.esn AS settlement_esn,
+                    b.amount AS settled_amount,
+                    bank_name,
+                    card_category,
+                    fund_type,
+                    UTR
+                FROM (
+                    SELECT
+                        LOWER(mid) AS mid,
+                        txn_id,
+                        txn_started_at,
+                        txn_amount,
+                        order_id,
+                        payment_type,
+                        payment_mode,
+                        bank_name,
+                        card_category
+                    FROM hive_offline.dwh.pg_olap
+                    WHERE responsecode = '01'
+                      AND LOWER(mid) IN ('${mid}')
+                      AND DATE(txn_started_at) BETWEEN DATE '${s}' AND DATE '${e}'
+                      AND ingest_date >= DATE '${s}'
+                ) a
+                JOIN (
+                    SELECT
+                        LOWER(paytm_mid) AS original_merchant_id,
+                        CAST(a.sts_transfer_id AS VARCHAR) AS esn,
+                        amount,
+                        created_time AS created_date,
+                        rrn_id AS UTR,
+                        CASE
+                            WHEN is_manual_m2b = 1 THEN 'MERCHANT_WITHDRAW'
+                            ELSE 'MERCHANT_AUTO_WITHDRAW'
+                        END AS fund_type
+                    FROM (
+                        (
+                            SELECT
+                                LOWER(paytm_mid) AS paytm_mid,
+                                sts_transfer_id,
+                                payout_id,
+                                amount / 100 AS amount,
+                                created_time
+                            FROM hive_offline.stsservicev2.settlement_transfer_snapshot_v3
+                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'
+                              AND LOWER(paytm_mid) IN ('${mid}')
+                              AND transaction_status = 'FUND_SUCCESS'
+                        ) a
+                        JOIN (
+                            SELECT DISTINCT payout_id, is_manual_m2b
+                            FROM hive_offline.stsservicev2.settlement_request_snapshot_v3
+                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'
+                        ) b ON a.payout_id = b.payout_id
+                        JOIN (
+                            SELECT sts_transfer_id, rrn_id
+                            FROM hive_offline.stsservicev2.bank_transfer_response_snapshot_v3
+                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'
+                        ) c ON a.sts_transfer_id = c.sts_transfer_id
+                    )
+                    UNION
+                    SELECT
+                        LOWER(original_merchant_id),
+                        CAST(settlement_esn AS VARCHAR),
+                        amount,
+                        created_date,
+                        utr,
+                        fund_type
+                    FROM (
+                        (
+                            SELECT
+                                LOWER(original_merchant_id) AS original_merchant_id,
+                                esn AS settlement_esn,
+                                amount,
+                                created_date,
+                                fund_type
+                            FROM hive_offline.oss_paytm_data_lake_prod.adm_business_wallet_v1_snapshot_v3
+                            WHERE LOWER(biz_status) = 's07'
+                              AND LOWER(original_merchant_id) IN ('${mid}')
+                              AND dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'
+                        ) x
+                        LEFT JOIN (
+                            SELECT
+                                external_serial_no AS esn,
+                                reference_no AS utr,
+                                JSON_EXTRACT_SCALAR(extension_info, '$.payoutId') AS payoutId
+                            FROM hive_offline.oss_paytm_data_lake_prod.ods_flux_ex_serial_snapshot_v3
+                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'
+                              AND external_event_code LIKE '%alipayplus.fluxnet.paytm.withdraw.request@1.1.2'
+                        ) y ON CAST(x.settlement_esn AS VARCHAR) = CAST(y.esn AS VARCHAR)
+                    )
+                ) b ON a.mid = b.original_merchant_id
+            ) a
+            WHERE txn_started_at < settlement_date
+        ) a
+        WHERE srno = 1
+    )
+) k1
+LEFT JOIN (
+    SELECT LOWER(mid) AS mid, bank_name
+    FROM hive_offline.pg.entity_info_snapshot_v3 x
+    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_id
+    WHERE x.dl_last_updated <= CURRENT_DATE
+      AND y.dl_last_updated <= CURRENT_DATE
+) k ON k1.mid = k.mid;`;
+}
+
+// ── CUSTOM QUERY & VIRTUAL BOT ──
+async function sendMessage() {
+  const input = document.getElementById('query-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; autoResize(input);
+  document.getElementById('send-btn').disabled = true;
+  
+  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
+  addUserMsg(text);
+  chatHistory.push({ role:'user', content:text });
+  addThinking();
+  
+  const schema = document.getElementById('schema-input').value.trim();
+  
+  // CURRENT DATE INJECTED FOR NLP "TILL DATE" LOGIC
+  const todayStr = fmt(new Date());
+
+  const sys = `You are SQL Ginny, expert Trino/Hive SQL assistant.
+CURRENT DATE: ${todayStr}. (Use this exact date if the user says "till date", "today", "now", or "current date").
+
+CRITICAL INSTRUCTION FOR INTENT ROUTING:
+Analyze the user's input AND conversation history. Return EXACTLY ONE of the following JSON formats:
+
+1. If user provides MID + Dates + explicitly asks for "settlement":
+{"intent": "settlement", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
+{"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+3. If user provides MID + Dates + explicitly asks for "recon" or "reconciliation":
+{"intent": "recon", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+4. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
+{"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+5. If it's a general custom SQL query request:
+{"intent": "custom", "sql": "...", "explanation": "..."}
+
+IMPORTANT RULE: If the user just replies "transaction", "settlement", or "recon" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON.
+Always LOWERCASE the mid in the JSON.
+RULES: Return ONLY valid JSON block.`;
+
+  const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
+  
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.1,max_tokens:1500})
+    });
+    const data = await res.json();
+    removeThinking();
+    
+    if (data.error) { 
+      addErrorMsg('API Error: '+data.error.message); 
+    } else {
+      const raw = data.choices?.[0]?.message?.content||'';
+      try { 
+        const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
+        const p = JSON.parse(m[0]); 
+        
+        if ((p.intent === 'settlement' || p.intent === 'transaction' || p.intent === 'recon') && p.mid && p.start_date && p.end_date) {
+          
+          const cleanMid = p.mid.trim().toLowerCase();
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          onMidInput(document.getElementById('mid-input'));
+          document.getElementById('custom-date').checked = true;
+          
+          let sql = '', typeName = '';
+          if (p.intent === 'settlement') {
+              sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Settlement';
+          } else if (p.intent === 'transaction') {
+              sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Transaction';
+          } else if (p.intent === 'recon') {
+              sql = buildReconSQL(cleanMid, p.start_date, p.end_date);
+              typeName = 'Reconciliation';
+          }
+
+          const explanation = `🤖 **Smart Detect:** Generating the standard **${typeName}** report for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.`;
+          addAssistantMsg(sql, explanation);
+          chatHistory.push({role:'assistant', content:raw});
+
+        } else if (p.intent === 'clarify' && p.mid && p.start_date && p.end_date) {
+          const cleanMid = p.mid.trim().toLowerCase();
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          onMidInput(document.getElementById('mid-input'));
+          document.getElementById('custom-date').checked = true;
+
+          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement, Transaction (Txn), or Recon Report?**`;
+          addTextOnlyMsg(msg);
+          chatHistory.push({ role: 'assistant', content: msg });
+        } else {
+          addAssistantMsg(p.sql || raw, p.explanation || ''); 
+          chatHistory.push({role:'assistant', content:raw});
+        }
+      } catch { 
+        addAssistantMsg(raw, ''); 
+        chatHistory.push({role:'assistant', content:raw});
+      }
+    }
+  } catch(err) { 
+    removeThinking(); 
+    addErrorMsg('Network error: '+err.message); 
+  }
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('query-input').focus();
+}
+
+// ── FILE UPLOAD AUTO RECON ──
+function processCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
+  addUserMsg(`📎 Uploaded file: ${file.name} for Auto Recon`);
+  addThinking();
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      const rows = text.split('\n');
+      if (rows.length < 2) throw new Error("File is empty or invalid.");
+
+      const headers = rows[0].split(',').map(h => h.replace(/['"]/g, '').trim());
+      const idxDate = headers.findIndex(h => h === 'Updated_Date');
+      const idxType = headers.findIndex(h => h === 'Transaction_Type');
+      const idxAmount = headers.findIndex(h => h === 'Amount');
+      const idxComm = headers.findIndex(h => h === 'Commission');
+      const idxGST = headers.findIndex(h => h === 'GST');
+      const idxUTR = headers.findIndex(h => h === 'UTR_No.');
+      const idxStatus = headers.findIndex(h => h === 'Status');
+
+      if (idxDate === -1 || idxType === -1 || idxAmount === -1) {
+        throw new Error("Missing required columns in CSV (Updated_Date, Transaction_Type, Amount).");
+      }
+
+      let reconData = {};
+
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+        const cols = rows[i].split(',');
+        const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
+
+        const status = getVal(idxStatus);
+        if(status && status !== 'SUCCESS') continue; 
+
+        const rawDate = getVal(idxDate);
+        if (!rawDate || rawDate === 'NaN') continue;
+        const date = rawDate.split(' ')[0]; 
+
+        const utr = getVal(idxUTR);
+        if (!utr || utr === 'NaN') continue;
+
+        const type = getVal(idxType).toUpperCase();
+        const amount = parseFloat(getVal(idxAmount)) || 0;
+        const comm = parseFloat(getVal(idxComm)) || 0;
+        const gst = parseFloat(getVal(idxGST)) || 0;
+
+        const key = `${date}|${utr}`;
+        if (!reconData[key]) reconData[key] = { date, utr, collected: 0, refund: 0, cb: 0, rep: 0, mdr_gst: 0 };
+
+        if (type.includes('ACQUIRING')) {
+          reconData[key].collected += amount;
+          reconData[key].mdr_gst += (comm + gst);
+        } else if (type.includes('REFUND')) { reconData[key].refund += amount; }
+        else if (type.includes('CHARGEBACK')) { reconData[key].cb += amount; }
+        else if (type.includes('REPAYMENT')) { reconData[key].rep += amount; }
+      }
+
+      let htmlTable = `
+        <div class="recon-table-wrap">
+        <table class="recon-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>UTR No.</th>
+              <th style="text-align:right;">Collected</th>
+              <th style="text-align:right;">Refunds</th>
+              <th style="text-align:right;">CB / Repay</th>
+              <th style="text-align:right;">MDR+GST</th>
+              <th style="text-align:right; color:var(--accent);">Net Settled</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      let hasData = false;
+      const sortedKeys = Object.keys(reconData).sort();
+
+      for (let key of sortedKeys) {
+        const d = reconData[key];
+        const net = d.collected - d.refund - d.cb - d.rep - d.mdr_gst;
+        if (net > 0) {
+          hasData = true;
+          const dateObj = new Date(d.date);
+          const fDate = dateObj.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+          
+          htmlTable += `
+            <tr>
+              <td style="white-space:nowrap;">${fDate}</td>
+              <td style="font-family:monospace; color:var(--accent);">${d.utr}</td>
+              <td style="text-align:right;">${fmtMoney(d.collected)}</td>
+              <td style="text-align:right; color:${d.refund > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.refund)}</td>
+              <td style="text-align:right; color:${(d.cb + d.rep) > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.cb + d.rep)}</td>
+              <td style="text-align:right; color:${d.mdr_gst > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.mdr_gst)}</td>
+              <td style="text-align:right; font-weight:700; color:var(--success);">${fmtMoney(net)}</td>
+            </tr>
+          `;
+        }
+      }
+      htmlTable += `</tbody></table></div>`;
+
+      removeThinking();
+      if (!hasData) {
+        addErrorMsg("No valid settlement data found. Ensure the CSV has 'SUCCESS' transactions and valid UTRs.");
+      } else {
+        addCustomHtmlMsg(htmlTable, `✅ **Recon Complete!** Here is the UTR-wise and Date-wise net settlement chart calculated directly from your CSV.`);
+      }
+
+    } catch(err) {
+      removeThinking();
+      addErrorMsg("Failed to parse CSV: " + err.message);
+    }
+    input.value = ''; 
+  };
+  reader.readAsText(file);
+}
+
+// ── UI HELPERS ──
+function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
+function clearChat() {
+  chatHistory = []; msgCount = 0;
+  document.getElementById('mid-input').value = '';
+  document.getElementById('mid-tag').classList.remove('show');
+  document.getElementById('custom-date').checked = true;
+  document.getElementById('date-from').disabled = false;
+  document.getElementById('date-to').disabled = false;
+  const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
+  document.getElementById('date-from').value=fmt(lastYear);
+  document.getElementById('date-to').value=fmt(today);
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"I can help you in updating SQL query!"</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
+}
+
+function addUserMsg(t) {
+  const w=document.getElementById('welcome'); if(w) w.remove();
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="msg-avatar">👤</div><div class="msg-body"><div class="msg-bubble">${escHtml(t)}</div></div>`;
+  document.getElementById('chat-container').appendChild(d); scrollBottom();
+}
+
+function addThinking() {
+  const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
+  d.innerHTML=`<div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Working on it...</div></div>`;
+  document.getElementById('chat-container').appendChild(d); scrollBottom();
+}
+
+function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
+
+function addTextOnlyMsg(text) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>').replace(/\n/g, '<br>');
+  div.innerHTML = `
+    <div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="msg-bubble" style="background:var(--surface2); border-color:var(--accent); color:var(--text);">${formattedText}</div></div>`;
+  document.getElementById('chat-container').appendChild(div); scrollBottom();
+}
+
+function addCustomHtmlMsg(htmlContent, explanation) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  let formattedExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  div.innerHTML = `
+    <div class="msg-avatar">🧞‍♂️</div>
+    <div class="msg-body">
+      <div class="explain-block" style="margin-top:0;">
+        <div class="explain-label">📊 Recon Auto-Chart</div>
+        <p style="margin-bottom: 10px;">${formattedExp}</p>
+        ${htmlContent}
+      </div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div); scrollBottom();
+}
+
+function addAssistantMsg(sqlCode, explanation) {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  const id = 'copy-' + (++msgCount);
+  const safeSql = encodeURIComponent(sqlCode);
+  let formattedExp = explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>') : '';
+
+  div.innerHTML = `
+    <div class="msg-avatar">🧞‍♂️</div>
+    <div class="msg-body">
+      ${explanation ? `<div class="explain-block"><div class="explain-label">💡 Information</div>${formattedExp}</div>` : ''}
+      <div class="sql-wrapper">
+        <div class="sql-block">
+          <div class="sql-header">
+            <span class="sql-lang">⚡ Trino SQL</span>
+            <button class="toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
+            <div class="sql-actions">
+              <button class="copy-btn" data-sql="${safeSql}" onclick="copyFullSQL(this)">📋 Copy</button>
+              <button class="superset-btn" data-sql="${safeSql}" onclick="openInSuperset(this)">🚀 Superset</button>
+            </div>
+          </div>
+          <div class="sql-code" style="display: none;">${highlightSQL(sqlCode)}</div>
+        </div>
+        <div class="ready-hint">✅ Ready · Ask something else or run again!</div>
+      </div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div); scrollBottom();
+}
+
+function toggleSql(btn) {
+  const codeBlock = btn.parentElement.nextElementSibling;
+  if (codeBlock.style.display === 'none') { codeBlock.style.display = 'block'; btn.innerHTML = '🙈 Hide Query'; } 
+  else { codeBlock.style.display = 'none'; btn.innerHTML = '👁️ Show Query'; }
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Ginny · Enterprise</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ══ THEME VARIABLES (DARK MODE DEFAULT) ══ */
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --accent: #38bdf8;
+    --accent-hover: #7dd3fc;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --sql-bg: #0b1120;
+    --success: #10b981;
+    --danger: #ef4444;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ══ LIGHT MODE OVERRIDES ══ */
+  body.light-mode {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --border: #e2e8f0;
+    --accent: #0284c7;
+    --accent-hover: #0369a1;
+    --text: #0f172a;
+    --muted: #64748b;
+    --sql-bg: #0f172a; 
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter', Arial, sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; transition: background 0.3s, color 0.3s; }
+  
+  /* Modern soft background glow */
+  body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(56,189,248,0.05) 0%, transparent 70%); pointer-events:none; z-index:0; transition: opacity 0.3s; }
+  body.light-mode::before { opacity: 0; }
+
+  /* ══ LOGIN ══ */
+  #login-screen { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:var(--bg); }
+  .login-wrap { display:flex; width:820px; height:500px; border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow); }
+  .login-left { width:320px; flex-shrink:0; background:linear-gradient(160deg, #0284c7 0%, #0369a1 100%); padding:40px 34px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; color: #fff; }
+  .login-left::before { content:''; position:absolute; bottom:-60px; right:-60px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); }
+  .login-left::after { content:''; position:absolute; top:-40px; left:-40px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); }
+  .login-brand { position:relative; z-index:1; }
+  .login-badge { background:rgba(255,255,255,0.2); color:#fff; font-weight:700; font-size:12px; padding:4px 10px; border-radius:4px; display:inline-block; margin-bottom:18px; text-transform: uppercase; letter-spacing: 1px;}
+  .login-app-name { font-size:32px; font-weight:800; line-height:1.2; margin-bottom:10px; letter-spacing: -0.5px; }
+  .login-app-name span { color:#bae6fd; }
+  .login-tagline { font-size:13px; color:rgba(255,255,255,0.8); line-height:1.6; }
+  .login-features { position:relative; z-index:1; }
+  .login-feature { display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:13px; color:rgba(255,255,255,0.9); font-weight: 500;}
+  .feat-icon { width:28px; height:28px; border-radius:6px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+  .login-right { flex:1; background:var(--surface); padding:40px 48px; display:flex; flex-direction:column; justify-content:center; transition: background 0.3s; }
+  .login-title { font-size:24px; font-weight:800; margin-bottom:6px; letter-spacing: -0.5px; }
+  .login-sub { font-size:14px; color:var(--muted); margin-bottom:32px; line-height:1.6; }
+  .form-group { margin-bottom:20px; }
+  .form-label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:block; }
+  .form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; color:var(--text); font-family:'Inter', sans-serif; font-size:14px; outline:none; transition:all 0.2s; }
+  .form-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(56,189,248,0.15); }
+  .form-input.shake { animation:shake 0.4s ease; border-color:var(--danger); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .error-msg { font-size:13px; color:var(--danger); margin-top:8px; display:none; font-weight: 500; }
+  .error-msg.show { display:block; }
+  .btn-login { width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:14px; font-family:'Inter', sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:10px; }
+  .btn-login:hover { background:var(--accent-hover); transform:translateY(-1px); }
+  body.light-mode .btn-login { color: #fff; }
+  .login-footer { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
+
+  /* ══ HEADER ══ */
+  header { position:relative; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .logo-area { display:flex; align-items:center; gap:12px; }
+  .enterprise-badge { background:var(--accent); color:#fff; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px; text-transform: uppercase; letter-spacing: 0.5px;}
+  .divider-v { width:1px; height:20px; background:var(--border); }
+  .app-title { font-size:16px; font-weight:700; letter-spacing: -0.3px;}
+  .app-title span { color:var(--accent); }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  
+  .btn-theme { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:6px 12px; color:var(--text); font-size:12px; font-family:'Inter', sans-serif; font-weight:600; cursor:pointer; transition:all 0.2s; display: flex; align-items: center; gap: 6px;}
+  .btn-theme:hover { border-color:var(--accent); }
+
+  .user-chip { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 12px 4px 4px; font-size:13px; color:var(--text); font-weight: 500;}
+  .user-avatar { width:24px; height:24px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+  .db-info { display:flex; align-items:center; gap:7px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
+  .db-dot { width:8px; height:8px; background:var(--success); border-radius:50%; box-shadow:0 0 5px var(--success); }
+  .btn-logout { background:transparent; border:none; color:var(--muted); font-size:13px; font-family:'Inter', sans-serif; font-weight:500; cursor:pointer; transition:all 0.15s; text-decoration: underline; }
+  .btn-logout:hover { color:var(--danger); }
+
+  /* ══ APP ══ */
+  #app { display:none; flex:1; flex-direction:column; position:relative; z-index:1; overflow:hidden; }
+  #app.visible { display:flex; }
+
+  /* TOOLBAR */
+  .toolbar { display:flex; align-items:center; gap:10px; padding:10px 24px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .btn-tool { display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:6px 12px; color:var(--text); font-family:'Inter', sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+  .btn-tool:hover { border-color:var(--accent); color: var(--accent); }
+  .btn-tool.active { color:#fff; border-color:var(--accent); background:var(--accent); }
+
+  /* PARAMS BAR */
+  .query-params-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 24px; background:var(--surface); border-bottom:1px solid var(--border); }
+  .param-label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+  .param-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; outline:none; transition:border-color 0.2s; }
+  .param-input:focus { border-color:var(--accent); }
+  #mid-input { width:220px; }
+  .date-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; outline:none; cursor:pointer; transition:border-color 0.2s; color-scheme:dark; }
+  body.light-mode .date-input { color-scheme: light; }
+  .date-input:focus { border-color:var(--accent); }
+  .date-sep { font-size:14px; color:var(--muted); font-weight:500; }
+  .mid-tag { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent); background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.2); border-radius:4px; padding:2px 8px; display:none; }
+  .mid-tag.show { display:inline-block; }
+  .btn-generate { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:8px 16px; font-family:'Inter', sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; margin-left:auto; }
+  .btn-generate:hover { border-color:var(--accent); color: var(--accent); }
+
+  /* DATE TOGGLE */
+  .date-toggle { display: flex; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; height: 34px; }
+  .date-toggle input { display: none; }
+  .date-toggle label { padding: 0 14px; height: 100%; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+  .date-toggle input:checked + label { background: var(--accent); color: #fff; }
+  .date-input:disabled { opacity: 0.5; cursor: not-allowed; border-color: transparent; }
+
+  /* SCHEMA PANEL */
+  #schema-panel { display:none; position:fixed; top:168px; bottom:0; left:0; width:300px; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:5; padding:20px; box-shadow: var(--shadow); }
+  #schema-panel.open { display:block; }
+  .panel-title { font-size:12px; font-weight:600; color:var(--text); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px; }
+  .schema-textarea { width:100%; background:var(--sql-bg); border:1px solid var(--border); border-radius:6px; padding:12px; color:#e2e8f0; font-family:'JetBrains Mono',monospace; font-size:12px; resize:vertical; min-height:250px; outline:none; line-height:1.6; }
+  .schema-textarea:focus { border-color:var(--accent); }
+
+  /* CHAT */
+  #chat-container { flex:1; overflow-y:auto; padding:30px 24px; display:flex; flex-direction:column; gap:24px; scroll-behavior:smooth; }
+  #chat-container::-webkit-scrollbar { width:6px; }
+  #chat-container::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  
+  .welcome-msg { text-align:center; padding:40px 20px; }
+  .ginny-mascot { display: block; margin: 0 auto 16px auto; font-size: 70px; animation: happyLaugh 1.5s ease-in-out infinite; transform-origin: center bottom; }
+  @keyframes happyLaugh {
+    0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+    25% { transform: translateY(-8px) scale(1.05) rotate(-5deg); }
+    50% { transform: translateY(0) scale(1.02) rotate(0deg); }
+    75% { transform: translateY(-8px) scale(1.05) rotate(5deg); }
+  }
+  .welcome-msg h2 { font-size:24px; font-weight:800; color:var(--text); margin-bottom:12px; letter-spacing: -0.5px; }
+  .welcome-msg p { font-size:15px; color:var(--muted); max-width:520px; margin:0 auto 32px; line-height:1.6; }
+  .how-to { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; max-width:720px; margin:0 auto; }
+  .how-step { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:16px 20px; text-align:left; flex:1; min-width:180px; box-shadow: var(--shadow); }
+  .step-num { font-size:22px; margin-bottom:8px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .step-desc { font-size:13px; color:var(--muted); line-height:1.5; }
+
+  /* Messages */
+  .msg { display:flex; gap:16px; max-width:960px; width:100%; margin:0 auto; animation:slideUp 0.3s ease; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .msg.user { flex-direction:row-reverse; }
+  .msg-avatar { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; background:var(--surface2); border: 1px solid var(--border); }
+  .msg.assistant .msg-avatar { animation: gentleBob 2s infinite ease-in-out; }
+  @keyframes gentleBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .msg-body { flex:1; min-width:0; }
+  .msg.user .msg-body { display:flex; flex-direction:column; align-items:flex-end; }
+  .msg-bubble { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; font-size:14px; line-height:1.6; color: var(--text); box-shadow: var(--shadow); }
+  .msg.user .msg-bubble { background:var(--accent); border-color:var(--accent); color: #fff; }
+
+  /* SQL Block & Accordion */
+  .sql-block { background:var(--sql-bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-top:12px; box-shadow: var(--shadow); }
+  .sql-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.2); }
+  .sql-lang { font-size:12px; font-weight:600; color:#38bdf8; letter-spacing:0.5px; text-transform:uppercase; font-family:'Inter',sans-serif; }
+  .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
+  .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
+  .sql-actions { display:flex; gap:8px; }
+  .copy-btn, .superset-btn { display:flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:4px; padding:4px 10px; color:var(--muted); font-size:12px; font-family:'Inter',sans-serif; font-weight:500; cursor:pointer; transition:all 0.15s; }
+  .copy-btn:hover { color:var(--text); border-color:var(--text); }
+  .copy-btn.copied { color:var(--success); border-color:var(--success); }
+  .superset-btn { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: var(--accent); }
+  .superset-btn:hover { background: rgba(56,189,248,0.2); }
+  .sql-code {padding:16px; font-size:13px; line-height:1.7; color:#e2e8f0; white-space:pre; overflow:auto; word-break:normal; font-family:'JetBrains Mono',monospace; border-top: 1px solid rgba(255,255,255,0.05);}
+  .kw { color:#f472b6; font-weight:600; }
+  .str { color:#a7f3d0; }
+  .num { color:#93c5fd; }
+  .cmt { color:#94a3b8; font-style:italic; }
+  
+  .explain-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:16px; margin-top:12px; font-size:14px; line-height:1.6; }
+  .explain-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+  .ready-hint { font-size:12px; color:var(--muted); margin-top:10px; text-align:right; font-weight: 500; }
+  
+  .thinking { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px; padding:14px 18px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-weight: 500;}
+  .dots span { display:inline-block; width:6px; height:6px; background:var(--accent); border-radius:50%; animation:dot 1.2s infinite; margin-right: 3px; }
+  .dots span:nth-child(2){animation-delay:0.2s} .dots span:nth-child(3){animation-delay:0.4s}
+  @keyframes dot { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+  .error-bubble { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:14px 18px; font-size:14px; color:var(--danger); font-weight: 500; }
+
+  /* Recon Table Styles */
+  .recon-table-wrap { overflow-x: auto; margin-top: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); }
+  .recon-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; color: var(--text); font-family: 'Inter', sans-serif; }
+  .recon-table th { padding: 12px 14px; font-weight: 600; background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;}
+  .recon-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .recon-table tr:last-child td { border-bottom: none; }
+  .recon-table tr:hover { background: rgba(255,255,255,0.02); }
+  body.light-mode .recon-table th { background: rgba(0,0,0,0.05); }
+  body.light-mode .recon-table tr:hover { background: rgba(0,0,0,0.02); }
+
+  /* INPUT BAR */
+  .input-bar { border-top:1px solid var(--border); background:var(--surface); padding:16px 24px; }
+  .input-row { display:flex; gap:12px; align-items:flex-end; max-width:960px; margin:0 auto; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:10px 10px 10px 16px; transition:all 0.2s; box-shadow: var(--shadow); }
+  .input-row:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(56,189,248,0.15); }
+  
+  /* Upload CSV Button */
+  .btn-upload { color: var(--muted); cursor: pointer; transition: color 0.2s; padding: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .btn-upload:hover { color: var(--accent); }
+  
+  #query-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'Inter',sans-serif; font-size:15px; resize:none; max-height:150px; min-height:24px; line-height:1.6; padding:4px 0; }
+  #query-input::placeholder { color:var(--muted); }
+  .send-btn { background:var(--accent); border:none; border-radius:8px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s; flex-shrink:0; color:#fff; }
+  .send-btn:hover:not(:disabled) { background:var(--accent-hover); transform:scale(1.05); }
+  .send-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .input-hints { display:flex; align-items:center; justify-content:space-between; max-width:960px; margin:10px auto 0; font-size:12px; color:var(--muted); font-weight: 500;}
+
+  /* TOAST */
+  .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--text); color:var(--bg); font-family:'Inter',sans-serif; font-size:14px; font-weight:600; padding:12px 24px; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.2); opacity:0; transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index:999; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body class="dark-mode">
+
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div class="login-brand">
+        <div class="login-badge">Enterprise</div>
+        <div class="login-app-name">SQL<br><span>Ginny</span></div>
+        <div class="login-tagline">AI-powered Trino SQL Assistant for fast & flawless data retrieval.</div>
+      </div>
+      <div class="login-features">
+        <div class="login-feature"><div class="feat-icon">📊</div>Settlement, Txn & Recon Reports</div>
+        <div class="login-feature"><div class="feat-icon">📎</div>CSV Upload & Auto Recon</div>
+        <div class="login-feature"><div class="feat-icon">🤖</div>Smart NLP intent router</div>
+        <div class="login-feature"><div class="feat-icon">🚀</div>One-click open in Superset</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-title">Welcome back</div>
+      <div class="login-sub">Sign in to access your workspace.</div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" id="login-user" placeholder="e.g. ratan.jha" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+        <div class="error-msg" id="login-error">❌ Invalid username or password.</div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
+      <div class="login-footer">🔒 Secured Internal Tool</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<header>
+  <div class="logo-area">
+    <div class="enterprise-badge">Data Tools</div>
+    <div class="divider-v"></div>
+    <div class="app-title">SQL <span>Ginny</span></div>
+  </div>
+  <div class="header-right">
+    <div class="db-info"><div class="db-dot"></div><span>trino · hive_offline</span></div>
+    <button class="btn-theme" id="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+    <div class="user-chip"><div class="user-avatar" id="user-avatar">?</div><span id="user-label">User</span></div>
+    <button class="btn-logout" onclick="doLogout()">Sign out</button>
+  </div>
+</header>
+
+<div id="app">
+  <div class="toolbar">
+    <button class="btn-tool" id="schema-toggle" onclick="toggleSchema()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> 
+      Table Schema
+    </button>
+    <button class="btn-tool" onclick="clearChat()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      Clear Chat
+    </button>
+  </div>
+
+  <div class="query-params-bar">
+    <span class="param-label">MID</span>
+    <input class="param-input" id="mid-input" type="text" placeholder="merchant id" oninput="onMidInput(this)" />
+    <span class="mid-tag" id="mid-tag"></span>
+    
+    <div class="date-toggle">
+      <input type="radio" id="fy-date" name="date-mode" value="fy" onchange="handleDateMode(this)">
+      <label for="fy-date">FY 25-26</label>
+      <input type="radio" id="custom-date" name="date-mode" value="custom" checked onchange="handleDateMode(this)">
+      <label for="custom-date">Custom</label>
+    </div>
+
+    <span class="param-label" style="margin-left:12px;">From</span>
+    <input class="date-input" id="date-from" type="date" />
+    <span class="date-sep">→</span>
+    <span class="param-label">To</span>
+    <input class="date-input" id="date-to" type="date" />
+    <button class="btn-generate" onclick="generateSettlementQuery()" id="generate-btn">Run Settlement</button>
+  </div>
+
+  <div id="schema-panel">
+    <div class="panel-title">Table Schema Input</div>
+    <textarea class="schema-textarea" id="schema-input" placeholder="Paste table schema here for custom queries..."></textarea>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;">💡 Copy from Superset's schema dropdown.</div>
+  </div>
+
+  <div id="chat-container">
+    <div class="welcome-msg" id="welcome">
+      <div class="ginny-mascot">🧞‍♂️</div>
+      <h2>"Tum mujhe MID do, mai tumhe query dunga!"</h2>
+      <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
+      <div class="how-to">
+        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div>
         <div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div>
         <div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div>
       </div>
@@ -713,7 +1739,13 @@ async function sendMessage() {
   chatHistory.push({ role:'user', content:text });
   addThinking();
   
+  const schema = document.getElementById('schema-input').value.trim();
+  
+  // CURRENT DATE INJECTED FOR NLP "TILL DATE" LOGIC
+  const todayStr = fmt(new Date());
+
   const sys = `You are SQL Ginny, expert Trino/Hive SQL assistant.
+CURRENT DATE: ${todayStr}. (Use this exact date if the user says "till date", "today", "now", or "current date").
 
 CRITICAL INSTRUCTION FOR INTENT ROUTING:
 Analyze the user's input AND conversation history. Return EXACTLY ONE of the following JSON formats:
@@ -942,7 +1974,7 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"I can help you in updating SQL query😊!"</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to 31 dec"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>"Tum mujhe MID do, mai tumhe query dunga!"</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -1019,6 +2051,40 @@ function toggleSql(btn) {
   if (codeBlock.style.display === 'none') { codeBlock.style.display = 'block'; btn.innerHTML = '🙈 Hide Query'; } 
   else { codeBlock.style.display = 'none'; btn.innerHTML = '👁️ Show Query'; }
 }
+
+function copyFullSQL(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(() => { 
+    btn.textContent='✅ Copied!'; btn.classList.add('copied'); 
+    setTimeout(()=> { btn.textContent='📋 Copy'; btn.classList.remove('copied'); }, 2000); 
+  });
+}
+
+function openInSuperset(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(()=>{ 
+    window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'); showToast('SQL copied! Press Ctrl+V in Superset'); 
+  }).catch(()=>window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'));
+}
+
+function addErrorMsg(msg) {
+  const d=document.createElement('div'); d.className='msg assistant';
+  d.innerHTML=`<div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="error-bubble">⚠️ ${escHtml(msg)}</div></div>`;
+  document.getElementById('chat-container').appendChild(d); scrollBottom();
+}
+
+function highlightSQL(sql) {
+  const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL','TIMESTAMP'];
+  let out=escHtml(sql).replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
+  kws.sort((a,b)=>b.length-a.length).forEach(kw=>{ out=out.replace(new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`,'gi'),'<span class="kw">$1</span>'); });
+  return out.replace(/('(?:[^'\\]|\\.)*')/g,'<span class="str">$1</span>').replace(/\b(\d+(\.\d+)?)\b/g,'<span class="num">$1</span>');
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function scrollBottom(){ /* Auto-scroll disabled */ }
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
+</script>
+</body>
+</html>
 
 function copyFullSQL(btn) {
   navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(() => { 
