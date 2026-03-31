@@ -91,20 +91,20 @@
     100% { transform: scale(1) translate(0, 0); background: #7e22ce; }
   }
 
-  /* ══ LOGIN SCREEN ══ */
-  /* Removed background blur from full screen to prevent unclickable bugs in some browsers */
+  /* ══ LOGIN SCREEN (Fixed Click Issue) ══ */
   #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
-  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; }
   .login-logo { font-size: 56px; margin-bottom: 16px; }
   .login-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; color: var(--text-primary); }
   .login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
-  .form-group { margin-bottom: 16px; text-align: left; }
+  .form-group { margin-bottom: 16px; text-align: left; position: relative; z-index: 10; }
   .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
-  .form-input { width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text-primary); font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; }
+  .form-input { width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text-primary); font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; position: relative; z-index: 10;}
   .form-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
   .error-msg { font-size: 12px; color: var(--danger); margin-top: 8px; display: none; font-weight: 500; }
   .error-msg.show { display: block; }
-  .btn-login { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 8px; position: relative; z-index: 10;}
+  
+  .btn-login { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 8px; position: relative; z-index: 50; pointer-events: auto;}
   .btn-login:hover { background: var(--accent-hover); box-shadow: 0 0 15px rgba(59,130,246,0.4); transform: scale(1.02); }
   .btn-login:active { transform: scale(0.98); }
   .form-input.shake { animation:shake 0.4s ease; border-color:var(--danger); }
@@ -191,7 +191,6 @@
   body.light-mode .sql-header { background: rgba(0,0,0,0.03); }
   .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase;}
   
-  /* TOGGLE SQL BUTTON */
   .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
   .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
   
@@ -253,6 +252,7 @@
       <input class="form-input" type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
       <div class="error-msg" id="login-error">❌ Invalid username or password.</div>
     </div>
+    
     <button type="button" class="btn-login" onclick="doLogin()">Authenticate</button>
     <div style="font-size:11px; color:var(--text-secondary); margin-top:20px;">Hint: User <b>ratan.jha</b> &nbsp;|&nbsp; Pass <b>paytm@123</b></div>
   </div>
@@ -377,11 +377,15 @@ function toggleTheme() {
   localStorage.setItem('ginny_theme', body.classList.contains('light-mode') ? 'light' : 'dark');
 }
 
-// ── AUTH ──
+// ── AUTH (FIXED) ──
 function doLogin() {
-  const raw = document.getElementById('login-user').value.trim().toLowerCase();
+  const userEl = document.getElementById('login-user');
+  const passEl = document.getElementById('login-pass');
+  if(!userEl || !passEl) return;
+
+  const raw = userEl.value.trim().toLowerCase();
   const user = raw.replace(/@paytm\.com$|@paytmpayments\.com$/,'');
-  const pass = document.getElementById('login-pass').value;
+  const pass = passEl.value;
   const errEl = document.getElementById('login-error');
 
   if (USERS[user] && USERS[user] === pass) {
@@ -391,9 +395,8 @@ function doLogin() {
     launchApp(user);
   } else {
     errEl.classList.add('show');
-    const pi = document.getElementById('login-pass');
-    pi.classList.add('shake');
-    setTimeout(() => pi.classList.remove('shake'), 500);
+    passEl.classList.add('shake');
+    setTimeout(() => passEl.classList.remove('shake'), 500);
   }
 }
 
@@ -680,7 +683,7 @@ Analyze the user's input AND conversation history. Return EXACTLY ONE of the fol
 2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
 {"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-3. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
+3. If user provides MID + Dates BUT DOES NOT specify settlement or txn:
 {"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
 4. If it's a general custom SQL query request:
@@ -834,3 +837,16 @@ function highlightSQL(sql) {
   const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL','TIMESTAMP'];
   let out=escHtml(sql).replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
   kws.sort((a,b)=>b.length-a.length).forEach(kw=>{ out=out.replace(new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`,'gi'),'<span class="kw">$1</span>'); });
+  return out.replace(/('(?:[^'\\]|\\.)*')/g,'<span class="str">$1</span>').replace(/\b(\d+(\.\d+)?)\b/g,'<span class="num">$1</span>');
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// Auto-scroll hata diya gaya hai.
+function scrollBottom(){ /* Auto-scroll disabled */ }
+
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
+</script>
+</body>
+</html>
