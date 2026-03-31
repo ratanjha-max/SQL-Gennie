@@ -94,7 +94,7 @@
   /* ══ LOGIN SCREEN ══ */
   #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
   .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); }
-  .login-logo { font-size: 40px; margin-bottom: 16px; }
+  .login-logo { font-size: 56px; margin-bottom: 16px; }
   .login-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; color: var(--text-primary); }
   .login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
   .form-group { margin-bottom: 16px; text-align: left; }
@@ -158,7 +158,7 @@
   #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   .welcome-msg { text-align: center; padding: 60px 20px; max-width: 650px; margin: 0 auto; }
-  .welcome-icon { font-size: 54px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.3)); }
+  .welcome-icon { font-size: 64px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.3)); }
   .welcome-msg h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
   .welcome-msg p { color: var(--text-secondary); font-size: 15px; margin-bottom: 40px; }
   .suggestion-chips { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -175,7 +175,7 @@
   .msg.user .msg-content { background: var(--bg-surface); backdrop-filter: blur(10px); padding: 14px 18px; border-radius: var(--radius-md); border-bottom-right-radius: 4px; font-size: 15px; line-height: 1.6; max-width: 80%; border: 1px solid var(--border); box-shadow: var(--shadow-sm);}
   
   .msg.assistant { background: transparent; }
-  .msg.assistant .msg-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16,185,129,0.2);}
+  .msg.assistant .msg-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16,185,129,0.2);}
   .msg.assistant .msg-content { flex: 1; font-size: 15px; line-height: 1.7; color: var(--text-primary); }
   
   /* Tables & SQL */
@@ -186,6 +186,11 @@
   .sql-header { display: flex; justify-content: space-between; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
   body.light-mode .sql-header { background: rgba(0,0,0,0.03); }
   .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase;}
+  
+  /* TOGGLE SQL BUTTON */
+  .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
+  .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
+  
   .sql-actions { display: flex; gap: 8px; }
   .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 4px 10px; border-radius: 4px;}
   .btn-code:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
@@ -242,7 +247,7 @@
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">✨</div>
+    <div class="login-logo">🧞</div>
     <div class="login-title">SQL Ginny</div>
     <div class="login-subtitle">Enterprise Data Intelligence</div>
     <div class="form-group">
@@ -323,7 +328,7 @@
 
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
-        <div class="welcome-icon">✨</div>
+        <div class="welcome-icon">🧞</div>
         <h2>I can share the updated query</h2>
         <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
         <div class="suggestion-chips">
@@ -679,285 +684,4 @@ FROM (
 LEFT JOIN (
     SELECT LOWER(mid) AS mid, bank_name
     FROM hive_offline.pg.entity_info_snapshot_v3 x
-    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_id
-    WHERE x.dl_last_updated <= CURRENT_DATE
-      AND y.dl_last_updated <= CURRENT_DATE
-) k ON k1.mid = k.mid;`;
-}
-
-// ── CUSTOM QUERY & VIRTUAL BOT ──
-async function sendMessage() {
-  const input = document.getElementById('query-input');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = ''; autoResize(input);
-  document.getElementById('send-btn').disabled = true;
-  
-  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
-  addUserMsg(text);
-  chatHistory.push({ role:'user', content:text });
-  addThinking();
-  
-  const todayStr = fmt(new Date());
-
-  const sys = `You are SQL Ginny, expert Trino/Hive SQL assistant.
-CURRENT DATE: ${todayStr}. (Use this exact date if the user says "till date", "today", "now", or "current date").
-
-CRITICAL INSTRUCTION FOR INTENT ROUTING:
-Analyze the user's input AND conversation history. Return EXACTLY ONE of the following JSON formats:
-
-1. If user provides MID + Dates + explicitly asks for "settlement":
-{"intent": "settlement", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
-
-2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
-{"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
-
-3. If user provides MID + Dates + explicitly asks for "recon" or "reconciliation":
-{"intent": "recon", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
-
-4. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
-{"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
-
-5. If it's a general custom SQL query request:
-{"intent": "custom", "sql": "...", "explanation": "..."}
-
-IMPORTANT RULE: If the user replies to a clarification question, pull the "mid", "start_date", and "end_date" from the history. Always LOWERCASE the mid in the JSON. Return ONLY valid JSON block.`;
-
-  const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
-  
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.1,max_tokens:1500})
-    });
-    const data = await res.json();
-    removeThinking();
-    
-    if (data.error) { 
-      addErrorMsg('API Error: '+data.error.message); 
-    } else {
-      const raw = data.choices?.[0]?.message?.content||'';
-      try { 
-        const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
-        const p = JSON.parse(m[0]); 
-        
-        if ((p.intent === 'settlement' || p.intent === 'transaction' || p.intent === 'recon') && p.mid && p.start_date && p.end_date) {
-          const cleanMid = p.mid.trim().toLowerCase();
-          document.getElementById('mid-input').value = cleanMid;
-          document.getElementById('date-from').value = p.start_date;
-          document.getElementById('date-to').value = p.end_date;
-          document.getElementById('custom-date').checked = true;
-          
-          let sql = '';
-          if (p.intent === 'settlement') sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
-          else if (p.intent === 'transaction') sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
-          else if (p.intent === 'recon') sql = buildReconSQL(cleanMid, p.start_date, p.end_date);
-
-          addAssistantMsg(sql, `I can share the updated query.`);
-          chatHistory.push({role:'assistant', content:raw});
-
-        } else if (p.intent === 'clarify' && p.mid && p.start_date && p.end_date) {
-          const cleanMid = p.mid.trim().toLowerCase();
-          document.getElementById('mid-input').value = cleanMid;
-          document.getElementById('date-from').value = p.start_date;
-          document.getElementById('date-to').value = p.end_date;
-          document.getElementById('custom-date').checked = true;
-
-          const msg = `I got the details for \`${cleanMid}\`.\n\n**Do you need a Settlement, Transaction (Txn), or Recon Report?**`;
-          addTextOnlyMsg(msg);
-          chatHistory.push({ role: 'assistant', content: msg });
-        } else {
-          addAssistantMsg(p.sql || raw, p.explanation || 'I can share the updated query.'); 
-          chatHistory.push({role:'assistant', content:raw});
-        }
-      } catch { 
-        addAssistantMsg(raw, 'I can share the updated query.'); 
-        chatHistory.push({role:'assistant', content:raw});
-      }
-    }
-  } catch(err) { 
-    removeThinking(); 
-    addErrorMsg('Network error: '+err.message); 
-  }
-  document.getElementById('send-btn').disabled = false;
-  document.getElementById('query-input').focus();
-}
-
-// ── FILE UPLOAD AUTO RECON ──
-function processCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
-  addUserMsg(`📎 Attached: ${file.name}`);
-  addThinking();
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const text = e.target.result;
-      const rows = text.split('\n');
-      if (rows.length < 2) throw new Error("File is empty or invalid.");
-
-      const headers = rows[0].split(',').map(h => h.replace(/['"]/g, '').trim());
-      const idxDate = headers.findIndex(h => h === 'Updated_Date');
-      const idxType = headers.findIndex(h => h === 'Transaction_Type');
-      const idxAmount = headers.findIndex(h => h === 'Amount');
-      const idxComm = headers.findIndex(h => h === 'Commission');
-      const idxGST = headers.findIndex(h => h === 'GST');
-      const idxUTR = headers.findIndex(h => h === 'UTR_No.');
-      const idxStatus = headers.findIndex(h => h === 'Status');
-
-      if (idxDate === -1 || idxType === -1 || idxAmount === -1) throw new Error("Missing required columns in CSV.");
-
-      let reconData = {};
-      for (let i = 1; i < rows.length; i++) {
-        if (!rows[i].trim()) continue;
-        const cols = rows[i].split(',');
-        const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
-
-        const status = getVal(idxStatus).toUpperCase();
-        const type = getVal(idxType).toUpperCase();
-        
-        if (status !== 'SUCCESS' && !['CHARGEBACK', 'REPAYMENT', 'REFUND'].some(t => type.includes(t))) continue; 
-
-        const rawDate = getVal(idxDate);
-        if (!rawDate || rawDate === 'NaN') continue;
-        const date = rawDate.split(' ')[0]; 
-
-        const utr = getVal(idxUTR);
-        if (!utr || utr === 'NaN') continue;
-
-        const amount = parseFloat(getVal(idxAmount)) || 0;
-        const comm = parseFloat(getVal(idxComm)) || 0;
-        const gst = parseFloat(getVal(idxGST)) || 0;
-
-        const key = `${date}|${utr}`;
-        if (!reconData[key]) reconData[key] = { date, utr, collected: 0, refund: 0, cb: 0, rep: 0, mdr_gst: 0 };
-
-        if (type.includes('ACQUIRING') && status === 'SUCCESS') {
-          reconData[key].collected += amount; reconData[key].mdr_gst += (comm + gst);
-        } else if (type.includes('REFUND') && status === 'SUCCESS') { reconData[key].refund += amount; }
-        else if (type.includes('CHARGEBACK')) { reconData[key].cb += amount; }
-        else if (type.includes('REPAYMENT')) { reconData[key].rep += amount; }
-      }
-
-      let htmlTable = `<div class="recon-table-wrap"><table class="recon-table"><thead><tr><th>Date</th><th>UTR No.</th><th style="text-align:right;">Collected</th><th style="text-align:right;">Refunds</th><th style="text-align:right;">CB / Repay</th><th style="text-align:right;">MDR+GST</th><th style="text-align:right; color:var(--accent);">Net Settled</th></tr></thead><tbody>`;
-
-      let hasData = false;
-      const sortedKeys = Object.keys(reconData).sort();
-
-      for (let key of sortedKeys) {
-        const d = reconData[key];
-        const net = d.collected - d.refund - d.cb - d.rep - d.mdr_gst;
-        if (net > 0) {
-          hasData = true;
-          const dateObj = new Date(d.date);
-          const fDate = dateObj.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-          htmlTable += `<tr><td style="white-space:nowrap;">${fDate}</td><td style="font-family:monospace; color:var(--accent);">${d.utr}</td><td style="text-align:right;">${fmtMoney(d.collected)}</td><td style="text-align:right; color:${d.refund > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.refund)}</td><td style="text-align:right; color:${(d.cb + d.rep) > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.cb + d.rep)}</td><td style="text-align:right; color:${d.mdr_gst > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.mdr_gst)}</td><td style="text-align:right; font-weight:700; color:var(--success);">${fmtMoney(net)}</td></tr>`;
-        }
-      }
-      htmlTable += `</tbody></table></div>`;
-
-      removeThinking();
-      if (!hasData) addErrorMsg("No valid settlement data found.");
-      else addCustomHtmlMsg(htmlTable, `Auto-Recon complete from CSV data.`);
-    } catch(err) {
-      removeThinking();
-      addErrorMsg("Failed to parse CSV: " + err.message);
-    }
-    input.value = ''; 
-  };
-  reader.readAsText(file);
-}
-
-// ── UI RENDER HELPERS ──
-function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
-function clearChat() {
-  chatHistory = []; msgCount = 0;
-  document.getElementById('mid-input').value = '';
-  document.getElementById('custom-date').checked = true;
-  const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
-  document.getElementById('date-from').value=fmt(lastYear); document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">✨</div><h2>I can share the updated query</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='recon for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();"><span>Reconciliation Report</span>"recon for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month'; document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
-}
-
-function addUserMsg(t) {
-  const w=document.getElementById('welcome'); if(w) w.remove();
-  const d=document.createElement('div'); d.className='msg user';
-  d.innerHTML=`<div class="msg-inner"><div class="msg-content">${escHtml(t)}</div></div>`;
-  document.getElementById('chat-container').appendChild(d); scrollBottom();
-}
-
-function addThinking() {
-  const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
-  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar">✨</div><div class="msg-content"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div></div>`;
-  document.getElementById('chat-container').appendChild(d); scrollBottom();
-}
-function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
-
-function addTextOnlyMsg(text) {
-  const div = document.createElement('div'); div.className = 'msg assistant';
-  let fText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; color:var(--text-primary); border:1px solid var(--border);">$1</span>').replace(/\n/g, '<br>');
-  div.innerHTML = `<div class="msg-inner"><div class="msg-avatar">✨</div><div class="msg-content">${fText}</div></div>`;
-  document.getElementById('chat-container').appendChild(div); scrollBottom();
-}
-
-function addCustomHtmlMsg(htmlContent, explanation) {
-  const div = document.createElement('div'); div.className = 'msg assistant';
-  let fExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  div.innerHTML = `<div class="msg-inner"><div class="msg-avatar">✨</div><div class="msg-content"><div style="margin-bottom:8px; color:var(--text-secondary);">${fExp}</div>${htmlContent}</div></div>`;
-  document.getElementById('chat-container').appendChild(div); scrollBottom();
-}
-
-function addAssistantMsg(sqlCode, explanation) {
-  const div = document.createElement('div'); div.className = 'msg assistant';
-  const safeSql = encodeURIComponent(sqlCode);
-  let fExp = explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; color:var(--text-primary); border:1px solid var(--border);">$1</span>') : 'I can share the updated query.';
-  div.innerHTML = `
-    <div class="msg-inner">
-      <div class="msg-avatar">✨</div>
-      <div class="msg-content">
-        <div class="explain-block">${fExp}</div>
-        <div class="sql-wrapper">
-          <div class="sql-header">
-            <span class="sql-lang">SQL</span>
-            <div class="sql-actions">
-              <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy</button>
-            </div>
-          </div>
-          <div class="sql-code">${highlightSQL(sqlCode)}</div>
-        </div>
-      </div>
-    </div>`;
-  document.getElementById('chat-container').appendChild(div); scrollBottom();
-}
-
-function copyFullSQL(btn) {
-  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(() => { 
-    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!'; btn.classList.add('highlight'); 
-    setTimeout(()=> { btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy'; btn.classList.remove('highlight'); }, 2000); 
-  });
-}
-
-function addErrorMsg(msg) {
-  const d=document.createElement('div'); d.className='msg assistant';
-  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar" style="background:var(--danger)">!</div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
-  document.getElementById('chat-container').appendChild(d); scrollBottom();
-}
-
-function highlightSQL(sql) {
-  const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL','TIMESTAMP'];
-  let out=escHtml(sql).replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
-  kws.sort((a,b)=>b.length-a.length).forEach(kw=>{ out=out.replace(new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`,'gi'),'<span class="kw">$1</span>'); });
-  return out.replace(/('(?:[^'\\]|\\.)*')/g,'<span class="str">$1</span>').replace(/\b(\d+(\.\d+)?)\b/g,'<span class="num">$1</span>');
-}
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function scrollBottom(){ const c=document.getElementById('chat-container'); c.scrollTop=c.scrollHeight; }
-function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
-function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
-</script>
-</body>
-</html>
+    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_
