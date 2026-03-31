@@ -192,24 +192,10 @@
   @keyframes dot { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
   .error-bubble { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:14px 18px; font-size:14px; color:var(--danger); font-weight: 500; }
 
-  /* Recon Table Styles */
-  .recon-table-wrap { overflow-x: auto; margin-top: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); }
-  .recon-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; color: var(--text); font-family: 'Inter', sans-serif; }
-  .recon-table th { padding: 12px 14px; font-weight: 600; background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;}
-  .recon-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-  .recon-table tr:last-child td { border-bottom: none; }
-  .recon-table tr:hover { background: rgba(255,255,255,0.02); }
-  body.light-mode .recon-table th { background: rgba(0,0,0,0.05); }
-  body.light-mode .recon-table tr:hover { background: rgba(0,0,0,0.02); }
-
   /* INPUT BAR */
   .input-bar { border-top:1px solid var(--border); background:var(--surface); padding:16px 24px; }
   .input-row { display:flex; gap:12px; align-items:flex-end; max-width:960px; margin:0 auto; background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:10px 10px 10px 16px; transition:all 0.2s; box-shadow: var(--shadow); }
   .input-row:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(56,189,248,0.15); }
-  
-  /* Upload CSV Button */
-  .btn-upload { color: var(--muted); cursor: pointer; transition: color 0.2s; padding: 4px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
-  .btn-upload:hover { color: var(--accent); }
   
   #query-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'Inter',sans-serif; font-size:15px; resize:none; max-height:150px; min-height:24px; line-height:1.6; padding:4px 0; }
   #query-input::placeholder { color:var(--muted); }
@@ -234,9 +220,9 @@
         <div class="login-tagline">AI-powered Trino SQL Assistant for fast & flawless data retrieval.</div>
       </div>
       <div class="login-features">
-        <div class="login-feature"><div class="feat-icon">📊</div>Settlement, Txn & Recon Reports</div>
-        <div class="login-feature"><div class="feat-icon">📎</div>CSV Upload & Auto Recon</div>
+        <div class="login-feature"><div class="feat-icon">📊</div>Settlement & Txn Reports</div>
         <div class="login-feature"><div class="feat-icon">🤖</div>Smart NLP intent router</div>
+        <div class="login-feature"><div class="feat-icon">🔡</div>Auto lowercase MID</div>
         <div class="login-feature"><div class="feat-icon">🚀</div>One-click open in Superset</div>
       </div>
     </div>
@@ -316,10 +302,10 @@
     <div class="welcome-msg" id="welcome">
       <div class="ginny-mascot">🧞‍♂️</div>
       <h2>I can share the updated query</h2>
-      <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
+      <p>I can instantly generate Settlement and Transaction reports.</p>
       <div class="how-to">
-        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div>
-        <div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div>
+        <div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to till date"</div></div>
+        <div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Just type "txn" or "settlement" to decide.</div></div>
         <div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div>
       </div>
     </div>
@@ -327,12 +313,7 @@
 
   <div class="input-bar">
     <div class="input-row">
-      <label class="btn-upload" title="Upload CSV for Auto Recon">
-        <input type="file" id="csv-upload" accept=".csv" onchange="processCSV(this)" style="display:none;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-      </label>
-
-      <textarea id="query-input" placeholder="Type a MID and dates, ask for a query, or upload a CSV..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <textarea id="query-input" placeholder="Type a MID and dates, or ask for a custom query..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -363,7 +344,6 @@ let msgCount = 0;
 
 const fmt = d => (d instanceof Date ? d : new Date(d+'T00:00:00')).toISOString().split('T')[0];
 const fmtDisplay = ds => new Date(ds+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const fmtMoney = val => '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
 // ── THEME TOGGLE ──
 function toggleTheme() {
@@ -490,32 +470,6 @@ WHERE a.txn_started_at >= TIMESTAMP '${s}'
   AND a.ingest_date >= DATE '${s}'
   AND a.txn_status = 'SUCCESS'
   AND LOWER(a.mid) in ('${mid}');`;
-}
-
-function buildReconSQL(mid, s, e) {
-  return `SELECT 
-    CAST(DATE(updated_date) AS VARCHAR) AS settled_date,
-    utr_no AS UTR,
-    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_collected,
-    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_refund,
-    SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) AS total_chargeback,
-    SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) AS total_repayment,
-    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END) AS total_mdr_gst,
-    (
-        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END)
-    ) AS net_settled_amount
-FROM hive_offline.dwh.pg_olap
-WHERE LOWER(mid) IN ('${mid}')
-  AND DATE(transaction_date) >= DATE '${s}'
-  AND DATE(transaction_date) <= DATE '${e}'
-  AND ingest_date >= DATE '${s}'
-  AND (UPPER(status) = 'SUCCESS' OR UPPER(transaction_type) IN ('CHARGEBACK', 'REPAYMENT', 'REFUND'))
-GROUP BY DATE(updated_date), utr_no
-ORDER BY DATE(updated_date) ASC;`;
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -728,16 +682,13 @@ Analyze the user's input AND conversation history. Return EXACTLY ONE of the fol
 2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
 {"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-3. If user provides MID + Dates + explicitly asks for "recon" or "reconciliation":
-{"intent": "recon", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
-
-4. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
+3. If user provides MID + Dates BUT DOES NOT specify settlement or transaction:
 {"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
 
-5. If it's a general custom SQL query request:
+4. If it's a general custom SQL query request:
 {"intent": "custom", "sql": "...", "explanation": "..."}
 
-IMPORTANT RULE: If the user just replies "transaction", "settlement", or "recon" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON.
+IMPORTANT RULE: If the user just replies "transaction" or "settlement" to your previous clarification question, you MUST pull the "mid", "start_date", and "end_date" from the conversation history and output the correct intent JSON.
 Always LOWERCASE the mid in the JSON.
 RULES: Return ONLY valid JSON block.`;
 
@@ -760,7 +711,7 @@ RULES: Return ONLY valid JSON block.`;
         const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
         const p = JSON.parse(m[0]); 
         
-        if ((p.intent === 'settlement' || p.intent === 'transaction' || p.intent === 'recon') && p.mid && p.start_date && p.end_date) {
+        if ((p.intent === 'settlement' || p.intent === 'transaction') && p.mid && p.start_date && p.end_date) {
           
           const cleanMid = p.mid.trim().toLowerCase();
           document.getElementById('mid-input').value = cleanMid;
@@ -776,10 +727,7 @@ RULES: Return ONLY valid JSON block.`;
           } else if (p.intent === 'transaction') {
               sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
               typeName = 'Transaction';
-          } else if (p.intent === 'recon') {
-              sql = buildReconSQL(cleanMid, p.start_date, p.end_date);
-              typeName = 'Reconciliation';
-          }
+          } 
 
           const explanation = `🤖 **Smart Detect:** Generating the standard **${typeName}** report for MID \`${cleanMid}\` from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.`;
           addAssistantMsg(sql, explanation);
@@ -793,7 +741,7 @@ RULES: Return ONLY valid JSON block.`;
           onMidInput(document.getElementById('mid-input'));
           document.getElementById('custom-date').checked = true;
 
-          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement, Transaction (Txn), or Recon Report?**`;
+          const msg = `I got the MID \`${cleanMid}\` and dates from \`${fmtDisplay(p.start_date)}\` to \`${fmtDisplay(p.end_date)}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
           addTextOnlyMsg(msg);
           chatHistory.push({ role: 'assistant', content: msg });
         } else {
@@ -813,131 +761,6 @@ RULES: Return ONLY valid JSON block.`;
   document.getElementById('query-input').focus();
 }
 
-// ── FILE UPLOAD AUTO RECON ──
-function processCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
-  addUserMsg(`📎 Uploaded file: ${file.name} for Auto Recon`);
-  addThinking();
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const text = e.target.result;
-      const rows = text.split('\n');
-      if (rows.length < 2) throw new Error("File is empty or invalid.");
-
-      const headers = rows[0].split(',').map(h => h.replace(/['"]/g, '').trim());
-      const idxDate = headers.findIndex(h => h === 'Updated_Date');
-      const idxType = headers.findIndex(h => h === 'Transaction_Type');
-      const idxAmount = headers.findIndex(h => h === 'Amount');
-      const idxComm = headers.findIndex(h => h === 'Commission');
-      const idxGST = headers.findIndex(h => h === 'GST');
-      const idxUTR = headers.findIndex(h => h === 'UTR_No.');
-      const idxStatus = headers.findIndex(h => h === 'Status');
-
-      if (idxDate === -1 || idxType === -1 || idxAmount === -1) {
-        throw new Error("Missing required columns in CSV (Updated_Date, Transaction_Type, Amount).");
-      }
-
-      let reconData = {};
-
-      for (let i = 1; i < rows.length; i++) {
-        if (!rows[i].trim()) continue;
-        const cols = rows[i].split(',');
-        const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
-
-        const status = getVal(idxStatus).toUpperCase();
-        const type = getVal(idxType).toUpperCase();
-        
-        // Include if SUCCESS or if it's a Chargeback/Refund/Repayment (these might not always be marked 'SUCCESS')
-        if (status !== 'SUCCESS' && !['CHARGEBACK', 'REPAYMENT', 'REFUND'].some(t => type.includes(t))) {
-            continue; 
-        }
-
-        const rawDate = getVal(idxDate);
-        if (!rawDate || rawDate === 'NaN') continue;
-        const date = rawDate.split(' ')[0]; 
-
-        const utr = getVal(idxUTR);
-        if (!utr || utr === 'NaN') continue;
-
-        const amount = parseFloat(getVal(idxAmount)) || 0;
-        const comm = parseFloat(getVal(idxComm)) || 0;
-        const gst = parseFloat(getVal(idxGST)) || 0;
-
-        const key = `${date}|${utr}`;
-        if (!reconData[key]) reconData[key] = { date, utr, collected: 0, refund: 0, cb: 0, rep: 0, mdr_gst: 0 };
-
-        if (type.includes('ACQUIRING') && status === 'SUCCESS') {
-          reconData[key].collected += amount;
-          reconData[key].mdr_gst += (comm + gst);
-        } else if (type.includes('REFUND') && status === 'SUCCESS') { reconData[key].refund += amount; }
-        else if (type.includes('CHARGEBACK')) { reconData[key].cb += amount; }
-        else if (type.includes('REPAYMENT')) { reconData[key].rep += amount; }
-      }
-
-      let htmlTable = `
-        <div class="recon-table-wrap">
-        <table class="recon-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>UTR No.</th>
-              <th style="text-align:right;">Collected</th>
-              <th style="text-align:right;">Refunds</th>
-              <th style="text-align:right;">CB / Repay</th>
-              <th style="text-align:right;">MDR+GST</th>
-              <th style="text-align:right; color:var(--accent);">Net Settled</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      let hasData = false;
-      const sortedKeys = Object.keys(reconData).sort();
-
-      for (let key of sortedKeys) {
-        const d = reconData[key];
-        const net = d.collected - d.refund - d.cb - d.rep - d.mdr_gst;
-        if (net > 0) {
-          hasData = true;
-          const dateObj = new Date(d.date);
-          const fDate = dateObj.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-          
-          htmlTable += `
-            <tr>
-              <td style="white-space:nowrap;">${fDate}</td>
-              <td style="font-family:monospace; color:var(--accent);">${d.utr}</td>
-              <td style="text-align:right;">${fmtMoney(d.collected)}</td>
-              <td style="text-align:right; color:${d.refund > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.refund)}</td>
-              <td style="text-align:right; color:${(d.cb + d.rep) > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.cb + d.rep)}</td>
-              <td style="text-align:right; color:${d.mdr_gst > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.mdr_gst)}</td>
-              <td style="text-align:right; font-weight:700; color:var(--success);">${fmtMoney(net)}</td>
-            </tr>
-          `;
-        }
-      }
-      htmlTable += `</tbody></table></div>`;
-
-      removeThinking();
-      if (!hasData) {
-        addErrorMsg("No valid settlement data found. Ensure the CSV has 'SUCCESS' transactions and valid UTRs.");
-      } else {
-        addCustomHtmlMsg(htmlTable, `✅ **Recon Complete!** Here is the UTR-wise and Date-wise net settlement chart calculated directly from your CSV.`);
-      }
-
-    } catch(err) {
-      removeThinking();
-      addErrorMsg("Failed to parse CSV: " + err.message);
-    }
-    input.value = ''; 
-  };
-  reader.readAsText(file);
-}
-
 // ── UI HELPERS ──
 function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
 function clearChat() {
@@ -950,7 +773,7 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>I can share the updated query</h2><p>I can instantly generate Settlement, Txn, and Recon reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"recon for qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">📎</div><div class="step-title">Auto Recon CSV</div><div class="step-desc">Upload a CSV file and I'll generate the net settled chart.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="ginny-mascot">🧞‍♂️</div><h2>I can share the updated query</h2><p>I can instantly generate Settlement and Transaction reports.</p><div class="how-to"><div class="how-step"><div class="step-num">💬</div><div class="step-title">Ask naturally</div><div class="step-desc">"mid qugeem326... 1 april to till date"</div></div><div class="how-step"><div class="step-num">🧠</div><div class="step-title">I'll remember</div><div class="step-desc">Just type "txn" or "settlement" to decide.</div></div><div class="how-step"><div class="step-num">✨</div><div class="step-title">Zero Errors</div><div class="step-desc">I format dates & lowercase MIDs automatically.</div></div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -962,7 +785,7 @@ function addUserMsg(t) {
 
 function addThinking() {
   const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
-  d.innerHTML=`<div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Working on it...</div></div>`;
+  d.innerHTML=`<div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Generating response...</div></div>`;
   document.getElementById('chat-container').appendChild(d); scrollBottom();
 }
 
@@ -974,22 +797,6 @@ function addTextOnlyMsg(text) {
   let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span class="mid-tag show" style="display:inline-block; margin:0 2px;">$1</span>').replace(/\n/g, '<br>');
   div.innerHTML = `
     <div class="msg-avatar">🧞‍♂️</div><div class="msg-body"><div class="msg-bubble" style="background:var(--surface2); border-color:var(--accent); color:var(--text);">${formattedText}</div></div>`;
-  document.getElementById('chat-container').appendChild(div); scrollBottom();
-}
-
-function addCustomHtmlMsg(htmlContent, explanation) {
-  const div = document.createElement('div');
-  div.className = 'msg assistant';
-  let formattedExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  div.innerHTML = `
-    <div class="msg-avatar">🧞‍♂️</div>
-    <div class="msg-body">
-      <div class="explain-block" style="margin-top:0;">
-        <div class="explain-label">📊 Recon Auto-Chart</div>
-        <p style="margin-bottom: 10px;">${formattedExp}</p>
-        ${htmlContent}
-      </div>
-    </div>`;
   document.getElementById('chat-container').appendChild(div); scrollBottom();
 }
 
