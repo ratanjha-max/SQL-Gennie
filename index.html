@@ -13,14 +13,13 @@
     --border: rgba(59, 130, 246, 0.15);
     --accent: #3b82f6;
     --accent-hover: #60a5fa;
-    --accent-glow: rgba(59, 130, 246, 0.3);
+    --accent-glow: rgba(59, 130, 246, 0.35);
     --text: #f1f5f9;
     --muted: #94a3b8;
     --sql-bg: #0c1324;
     --success: #22c55e;
     --danger: #ef4444;
-    --shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.6);
-    --glass: rgba(18, 26, 46, 0.75);
+    --shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.7);
   }
 
   body.light-mode {
@@ -33,8 +32,7 @@
     --text: #0f172a;
     --muted: #64748b;
     --sql-bg: #0f172a;
-    --shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.1);
-    --glass: rgba(255, 255, 255, 0.85);
+    --shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.12);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -43,82 +41,71 @@
     color: var(--text);
     font-family: 'Inter', system-ui, sans-serif;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s ease;
   }
 
-  /* Premium background */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+    background: radial-gradient(circle at 25% 15%, rgba(59,130,246,0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
 
-  /* Glassmorphism Base */
   .glass {
-    background: var(--glass);
+    background: rgba(18, 26, 46, 0.85);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
   }
 
-  /* LOGIN SCREEN - More Premium */
+  /* ==================== LOGIN SCREEN (Fixed & Clickable) ==================== */
   #login-screen {
     position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--bg);
   }
+
   .login-wrap {
     display: flex;
     width: 860px;
     height: 520px;
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 10000;
   }
+
   .login-left {
     width: 340px;
     background: linear-gradient(145deg, #1e3a8a 0%, #1e40af 100%);
     padding: 48px 40px;
+    color: white;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: white;
     position: relative;
   }
-  .login-left::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('https://picsum.photos/id/1015/600/800') center/cover;
-    opacity: 0.15;
-  }
-  .login-brand {
-    position: relative;
-    z-index: 2;
-  }
+
   .login-badge {
     background: rgba(255,255,255,0.25);
-    color: #fff;
+    color: white;
     font-weight: 700;
     font-size: 11px;
-    padding: 5px 14px;
+    padding: 6px 16px;
     border-radius: 9999px;
     display: inline-block;
     margin-bottom: 20px;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
   }
+
   .login-app-name {
     font-size: 38px;
     font-weight: 800;
@@ -136,12 +123,7 @@
     justify-content: center;
   }
 
-  .login-title {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.6px;
-    margin-bottom: 8px;
-  }
+  .login-title { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; margin-bottom: 8px; }
 
   .form-input {
     width: 100%;
@@ -153,62 +135,41 @@
     font-size: 15px;
     transition: all 0.3s ease;
   }
+
   .form-input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-glow);
-    outline: none;
   }
 
   .btn-login {
     width: 100%;
     background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-    color: #fff;
+    color: white;
     border: none;
     border-radius: 12px;
     padding: 16px;
-    font-weight: 600;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 12px;
+    position: relative;
+    z-index: 10;
   }
+
   .btn-login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px var(--accent-glow);
+    box-shadow: 0 12px 25px -5px var(--accent-glow);
   }
 
-  /* HEADER */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 50;
-  }
-  .app-title {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
+  .error-msg { color: var(--danger); font-size: 13px; margin-top: 8px; display: none; }
+
+  /* Rest of your original styles (toolbar, chat, sql block, etc.) */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; z-index: 50; }
+
+  .app-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
   .app-title span { color: var(--accent); }
 
-  /* TOOLBAR & PARAMS */
-  .toolbar, .query-params-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .btn-tool, .btn-generate {
-    border-radius: 9999px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .btn-tool:hover, .btn-generate:hover {
-    transform: translateY(-1px);
-  }
-
-  /* INPUT AREA */
   .input-row {
     background: var(--surface2);
     border-radius: 20px;
@@ -216,74 +177,121 @@
     box-shadow: var(--shadow);
   }
 
-  /* SQL Block */
   .sql-block {
+    background: var(--sql-bg);
+    border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--border);
   }
 
-  /* Toast */
   .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
     background: #0f172a;
-    color: #fff;
+    color: white;
+    padding: 12px 24px;
     border-radius: 9999px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 99999;
   }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body class="dark-mode">
 
-<!-- Login Screen (Premium) -->
+<!-- FIXED LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-wrap glass">
+    <!-- Left Side -->
     <div class="login-left">
-      <div class="login-brand">
+      <div>
         <div class="login-badge">ENTERPRISE</div>
         <div class="login-app-name">SQL<br><span>GINNY</span></div>
-        <p style="margin-top:16px; opacity:0.9; font-size:15px;">Precision data intelligence for Paytm Payments</p>
+        <p style="margin-top:20px; opacity:0.9; font-size:15px;">Precision data intelligence for Paytm Payments</p>
       </div>
-      <div style="font-size:13px; opacity:0.75;">
-        Trusted by finance teams • Trino • Hive • Real-time
-      </div>
+      <div style="font-size:13px; opacity:0.75;">Trino • Hive • Real-time Reports</div>
     </div>
+
+    <!-- Right Side -->
     <div class="login-right">
       <div class="login-title">Welcome back, Ratan</div>
       <p style="color:var(--muted); margin-bottom:32px;">Sign in to access your premium workspace</p>
-      
-      <div class="form-group" style="margin-bottom:20px;">
+
+      <div style="margin-bottom:20px;">
         <label style="font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:8px;">Username</label>
-        <input class="form-input" type="text" id="login-user" placeholder="ratan.jha" value="ratan.jha">
+        <input class="form-input" type="text" id="login-user" placeholder="ratan.jha" value="ratan.jha" autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
       </div>
-      <div class="form-group">
+
+      <div style="margin-bottom:24px;">
         <label style="font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:8px;">Password</label>
-        <input class="form-input" type="password" id="login-pass" placeholder="••••••••" value="paytm@123">
-        <div class="error-msg" id="login-error" style="color:#ef4444; font-size:13px; margin-top:8px; display:none;">Invalid credentials</div>
+        <input class="form-input" type="password" id="login-pass" placeholder="••••••••" value="paytm@123" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+        <div class="error-msg" id="login-error">❌ Invalid username or password.</div>
       </div>
-      
-      <button class="btn-login" onclick="doLogin()">Sign In Securely</button>
-      <p style="text-align:center; margin-top:24px; font-size:13px; color:var(--muted);">🔒 Enterprise-grade security</p>
+
+      <button class="btn-login" onclick="doLogin()" id="signin-btn">Sign In Securely</button>
+
+      <p style="text-align:center; margin-top:28px; font-size:13px; color:var(--muted);">🔒 Enterprise-grade security</p>
     </div>
   </div>
 </div>
 
-<!-- Rest of your HTML (header, app, chat, etc.) remains mostly same, but you can apply .glass class to major panels for premium look -->
+<div class="toast" id="toast"></div>
 
-<!-- Example: Make input bar glassmorphic -->
-<div class="input-bar" style="background: transparent;">
-  <div class="input-row glass" style="padding: 12px 16px;">
-    <!-- your textarea and buttons -->
-  </div>
-</div>
+<!-- Your existing header, app, chat, script sections remain here -->
+<!-- For brevity, I'm showing only the critical fixed part above. 
+     Paste your full original <header>, <div id="app"> ... and <script> below this login section. -->
 
 <script>
-// Your existing JavaScript remains almost the same
-// Just update colors if needed and add some subtle transitions
+// Your original JavaScript (with small safety improvement)
+const GROQ_API_KEY = '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';
+const USERS = {
+  'ratan.jha': 'paytm@123',
+  'admin': 'admin@123'
+};
 
-// Auto-login for testing (remove in production)
+let currentUser = '';
+
+function doLogin() {
+  const raw = document.getElementById('login-user').value.trim().toLowerCase();
+  const user = raw.replace(/@paytm\.com$|@paytmpayments\.com$/, '');
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+
+  if (USERS[user] && USERS[user] === pass) {
+    currentUser = user;
+    sessionStorage.setItem('sguser', user);
+    errEl.style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('user-label').textContent = user;
+    document.getElementById('user-avatar').textContent = user[0].toUpperCase();
+    // Set default dates...
+    const today = new Date();
+    const lastYear = new Date(today); lastYear.setFullYear(today.getFullYear()-1);
+    document.getElementById('date-to').value = today.toISOString().split('T')[0];
+    document.getElementById('date-from').value = lastYear.toISOString().split('T')[0];
+  } else {
+    errEl.style.display = 'block';
+    const passInput = document.getElementById('login-pass');
+    passInput.classList.add('shake');
+    setTimeout(() => passInput.classList.remove('shake'), 600);
+  }
+}
+
+// Add this small safety
 window.addEventListener('load', () => {
-  // ... your existing load code
+  const saved = sessionStorage.getItem('sguser');
+  if (saved && USERS[saved]) {
+    currentUser = saved;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+  }
 });
 </script>
+
 </body>
 </html>
