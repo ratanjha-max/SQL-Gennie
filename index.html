@@ -8,12 +8,12 @@
 <style>
   /* ══ ULTRA-PREMIUM AMBIENT THEME VARIABLES ══ */
   :root {
-    --bg-main: #000000;          /* Deep sleek black */
-    --bg-sidebar: rgba(10, 10, 15, 0.6); /* Transparent for glass effect */
+    --bg-main: #000000;          
+    --bg-sidebar: rgba(10, 10, 15, 0.6); 
     --bg-surface: rgba(25, 25, 35, 0.4); 
     --bg-surface-hover: rgba(40, 40, 55, 0.6);
     --border: rgba(255, 255, 255, 0.08);
-    --accent: #3b82f6;           /* AWS/Tech Blue */
+    --accent: #3b82f6;           
     --accent-hover: #60a5fa;
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
@@ -28,7 +28,7 @@
     --radius-lg: 24px;
   }
 
-  /* Light Mode Overrides (Kept for fallback, but optimized for Dark) */
+  /* Light Mode Overrides */
   body.light-mode {
     --bg-main: #f8fafc;
     --bg-sidebar: rgba(255, 255, 255, 0.7);
@@ -68,19 +68,19 @@
   .glow-1 {
     width: 600px; height: 600px;
     top: -100px; left: -100px;
-    background: #1d4ed8; /* Blue */
+    background: #1d4ed8; 
     animation-delay: 0s;
   }
   .glow-2 {
     width: 500px; height: 500px;
     bottom: -150px; right: -50px;
-    background: #7e22ce; /* Purple */
+    background: #7e22ce; 
     animation-delay: -5s;
   }
   .glow-3 {
     width: 450px; height: 450px;
     top: 40%; left: 40%;
-    background: #0f766e; /* Teal */
+    background: #0f766e; 
     animation-duration: 20s;
   }
 
@@ -92,8 +92,9 @@
   }
 
   /* ══ LOGIN SCREEN ══ */
-  #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
-  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); }
+  /* Removed background blur from full screen to prevent unclickable bugs in some browsers */
+  #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
+  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
   .login-logo { font-size: 56px; margin-bottom: 16px; }
   .login-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; color: var(--text-primary); }
   .login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
@@ -101,10 +102,13 @@
   .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
   .form-input { width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text-primary); font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; }
   .form-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
-  .error-msg { font-size: 12px; color: var(--danger); margin-top: 8px; display: none; }
+  .error-msg { font-size: 12px; color: var(--danger); margin-top: 8px; display: none; font-weight: 500; }
   .error-msg.show { display: block; }
-  .btn-login { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 8px; }
-  .btn-login:hover { background: var(--accent-hover); box-shadow: 0 0 15px rgba(59,130,246,0.4); }
+  .btn-login { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 8px; position: relative; z-index: 10;}
+  .btn-login:hover { background: var(--accent-hover); box-shadow: 0 0 15px rgba(59,130,246,0.4); transform: scale(1.02); }
+  .btn-login:active { transform: scale(0.98); }
+  .form-input.shake { animation:shake 0.4s ease; border-color:var(--danger); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
   /* ══ MAIN APP LAYOUT ══ */
   #app { display: none; width: 100%; height: 100%; flex-direction: row; position: relative; z-index: 1; }
@@ -203,21 +207,11 @@
   .num { color: #d19a66; } 
   .cmt { color: #5c6370; font-style: italic; }
 
-  /* Recon Table */
-  .recon-table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);}
-  .recon-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-  .recon-table th { padding: 14px 16px; background: rgba(255,255,255,0.03); color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;}
-  .recon-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
-  .recon-table tr:hover { background: rgba(255,255,255,0.03); }
-
   /* ══ FLOATING INPUT BAR (Glassmorphism) ══ */
   .input-area-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; background: linear-gradient(to top, var(--bg-main) 60%, transparent); display: flex; justify-content: center; z-index: 20;}
   .input-box-wrapper { width: 100%; max-width: 800px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; box-shadow: var(--shadow-lg); transition: all 0.3s; }
   body.light-mode .input-box-wrapper { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0,0,0,0.1); }
   .input-box-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 10px 40px -3px rgba(59,130,246,0.2); }
-  
-  .btn-upload { color: var(--text-secondary); cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; display: flex; margin-bottom: 2px;}
-  .btn-upload:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
   
   #query-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; resize: none; max-height: 150px; min-height: 24px; line-height: 1.5; padding: 8px 0; }
   #query-input::placeholder { color: var(--text-secondary); }
@@ -257,9 +251,10 @@
     <div class="form-group">
       <label>Access Key</label>
       <input class="form-input" type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
-      <div class="error-msg" id="login-error">Invalid credentials.</div>
+      <div class="error-msg" id="login-error">❌ Invalid username or password.</div>
     </div>
-    <button class="btn-login" onclick="doLogin()">Authenticate</button>
+    <button type="button" class="btn-login" onclick="doLogin()">Authenticate</button>
+    <div style="font-size:11px; color:var(--text-secondary); margin-top:20px;">Hint: User <b>ratan.jha</b> &nbsp;|&nbsp; Pass <b>paytm@123</b></div>
   </div>
 </div>
 
@@ -330,11 +325,11 @@
       <div class="welcome-msg" id="welcome">
         <div class="welcome-icon">🧞</div>
         <h2>I can share the updated query</h2>
-        <p>I can instantly generate Settlement, Txn, and Recon reports.</p>
+        <p>I can instantly generate Settlement and Transaction reports.</p>
         <div class="suggestion-chips">
-          <div class="chip" onclick="document.getElementById('query-input').value='recon for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
-            <span>Reconciliation Report</span>
-            "recon for mid qugeem... 1 april to till date"
+          <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
+            <span>Transaction Report</span>
+            "txn for mid qugeem... 1 april to till date"
           </div>
           <div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month'; document.getElementById('query-input').focus();">
             <span>Settlement Query</span>
@@ -346,11 +341,6 @@
 
     <div class="input-area-container">
       <div class="input-box-wrapper">
-        <label class="btn-upload" title="Upload CSV for Auto Recon">
-          <input type="file" id="csv-upload" accept=".csv" onchange="processCSV(this)" style="display:none;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-        </label>
-        
         <textarea id="query-input" placeholder="Message SQL Ginny..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         
         <button class="send-btn" id="send-btn" onclick="sendMessage()">
@@ -379,7 +369,6 @@ let msgCount = 0;
 
 const fmt = d => (d instanceof Date ? d : new Date(d+'T00:00:00')).toISOString().split('T')[0];
 const fmtDisplay = ds => new Date(ds+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const fmtMoney = val => '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
 // ── THEME TOGGLE ──
 function toggleTheme() {
@@ -480,32 +469,6 @@ WHERE a.txn_started_at >= TIMESTAMP '${s}'
   AND a.ingest_date >= DATE '${s}'
   AND a.txn_status = 'SUCCESS'
   AND LOWER(a.mid) in ('${mid}');`;
-}
-
-function buildReconSQL(mid, s, e) {
-  return `SELECT 
-    CAST(DATE(updated_date) AS VARCHAR) AS settled_date,
-    utr_no AS UTR,
-    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_collected,
-    SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) AS total_refund,
-    SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) AS total_chargeback,
-    SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) AS total_repayment,
-    SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END) AS total_mdr_gst,
-    (
-        SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'REFUND' AND UPPER(status) = 'SUCCESS' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'CHARGEBACK' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'REPAYMENT' THEN amount ELSE 0 END) 
-        - SUM(CASE WHEN UPPER(transaction_type) = 'ACQUIRING' AND UPPER(status) = 'SUCCESS' THEN COALESCE(commission, 0) + COALESCE(gst, 0) ELSE 0 END)
-    ) AS net_settled_amount
-FROM hive_offline.dwh.pg_olap
-WHERE LOWER(mid) IN ('${mid}')
-  AND DATE(transaction_date) >= DATE '${s}'
-  AND DATE(transaction_date) <= DATE '${e}'
-  AND ingest_date >= DATE '${s}'
-  AND (UPPER(status) = 'SUCCESS' OR UPPER(transaction_type) IN ('CHARGEBACK', 'REPAYMENT', 'REFUND'))
-GROUP BY DATE(updated_date), utr_no
-ORDER BY DATE(updated_date) ASC;`;
 }
 
 function buildSettlementSQL(mid, s, e) {
@@ -684,4 +647,190 @@ FROM (
 LEFT JOIN (
     SELECT LOWER(mid) AS mid, bank_name
     FROM hive_offline.pg.entity_info_snapshot_v3 x
-    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_
+    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_id
+    WHERE x.dl_last_updated <= CURRENT_DATE
+      AND y.dl_last_updated <= CURRENT_DATE
+) k ON k1.mid = k.mid;`;
+}
+
+// ── CUSTOM QUERY & VIRTUAL BOT ──
+async function sendMessage() {
+  const input = document.getElementById('query-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; autoResize(input);
+  document.getElementById('send-btn').disabled = true;
+  
+  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
+  addUserMsg(text);
+  chatHistory.push({ role:'user', content:text });
+  addThinking();
+  
+  const todayStr = fmt(new Date());
+
+  const sys = `You are SQL Ginny, expert Trino/Hive SQL assistant.
+CURRENT DATE: ${todayStr}. (Use this exact date if the user says "till date", "today", "now", or "current date").
+
+CRITICAL INSTRUCTION FOR INTENT ROUTING:
+Analyze the user's input AND conversation history. Return EXACTLY ONE of the following JSON formats:
+
+1. If user provides MID + Dates + explicitly asks for "settlement":
+{"intent": "settlement", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+2. If user provides MID + Dates + explicitly asks for "transaction" or "txn":
+{"intent": "transaction", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+3. If user provides MID + Dates BUT DOES NOT specify settlement, txn, or recon:
+{"intent": "clarify", "mid": "<extracted_mid>", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}
+
+4. If it's a general custom SQL query request:
+{"intent": "custom", "sql": "...", "explanation": "..."}
+
+IMPORTANT RULE: If the user replies to a clarification question, pull the "mid", "start_date", and "end_date" from the history. Always LOWERCASE the mid in the JSON. Return ONLY valid JSON block.`;
+
+  const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
+  
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.1,max_tokens:1500})
+    });
+    const data = await res.json();
+    removeThinking();
+    
+    if (data.error) { 
+      addErrorMsg('API Error: '+data.error.message); 
+    } else {
+      const raw = data.choices?.[0]?.message?.content||'';
+      try { 
+        const m = raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); 
+        const p = JSON.parse(m[0]); 
+        
+        if ((p.intent === 'settlement' || p.intent === 'transaction') && p.mid && p.start_date && p.end_date) {
+          
+          const cleanMid = p.mid.trim().toLowerCase();
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          document.getElementById('custom-date').checked = true;
+          
+          let sql = '';
+          if (p.intent === 'settlement') sql = buildSettlementSQL(cleanMid, p.start_date, p.end_date);
+          else if (p.intent === 'transaction') sql = buildTransactionSQL(cleanMid, p.start_date, p.end_date);
+
+          addAssistantMsg(sql, `I can share the updated query.`);
+          chatHistory.push({role:'assistant', content:raw});
+
+        } else if (p.intent === 'clarify' && p.mid && p.start_date && p.end_date) {
+          const cleanMid = p.mid.trim().toLowerCase();
+          document.getElementById('mid-input').value = cleanMid;
+          document.getElementById('date-from').value = p.start_date;
+          document.getElementById('date-to').value = p.end_date;
+          document.getElementById('custom-date').checked = true;
+
+          const msg = `I got the details for \`${cleanMid}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
+          addTextOnlyMsg(msg);
+          chatHistory.push({ role: 'assistant', content: msg });
+        } else {
+          addAssistantMsg(p.sql || raw, p.explanation || 'I can share the updated query.'); 
+          chatHistory.push({role:'assistant', content:raw});
+        }
+      } catch { 
+        addAssistantMsg(raw, 'I can share the updated query.'); 
+        chatHistory.push({role:'assistant', content:raw});
+      }
+    }
+  } catch(err) { 
+    removeThinking(); 
+    addErrorMsg('Network error: '+err.message); 
+  }
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('query-input').focus();
+}
+
+// ── UI RENDER HELPERS ──
+function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
+function clearChat() {
+  chatHistory = []; msgCount = 0;
+  document.getElementById('mid-input').value = '';
+  document.getElementById('custom-date').checked = true;
+  const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
+  document.getElementById('date-from').value=fmt(lastYear); document.getElementById('date-to').value=fmt(today);
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">🧞</div><h2>I can share the updated query</h2><p>I can instantly generate Settlement and Transaction reports.</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();"><span>Transaction Report</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month'; document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+}
+
+function addUserMsg(t) {
+  const w=document.getElementById('welcome'); if(w) w.remove();
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="msg-inner"><div class="msg-content">${escHtml(t)}</div></div>`;
+  document.getElementById('chat-container').appendChild(d);
+}
+
+function addThinking() {
+  const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
+  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar" style="font-size: 20px;">🧞</div><div class="msg-content"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div></div>`;
+  document.getElementById('chat-container').appendChild(d);
+}
+function removeThinking() { const t=document.getElementById('thinking-msg'); if(t) t.remove(); }
+
+function addTextOnlyMsg(text) {
+  const div = document.createElement('div'); div.className = 'msg assistant';
+  let fText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; color:var(--text-primary); border:1px solid var(--border);">$1</span>').replace(/\n/g, '<br>');
+  div.innerHTML = `<div class="msg-inner"><div class="msg-avatar" style="font-size: 20px;">🧞</div><div class="msg-content">${fText}</div></div>`;
+  document.getElementById('chat-container').appendChild(div);
+}
+
+function addAssistantMsg(sqlCode, explanation) {
+  const div = document.createElement('div'); div.className = 'msg assistant';
+  const safeSql = encodeURIComponent(sqlCode);
+  let fExp = explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; color:var(--text-primary); border:1px solid var(--border);">$1</span>') : 'I can share the updated query.';
+  div.innerHTML = `
+    <div class="msg-inner">
+      <div class="msg-avatar" style="font-size: 20px;">🧞</div>
+      <div class="msg-content">
+        <div class="explain-block">${fExp}</div>
+        <div class="sql-wrapper">
+          <div class="sql-header">
+            <span class="sql-lang">SQL</span>
+            <button class="toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
+            <div class="sql-actions">
+              <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy</button>
+            </div>
+          </div>
+          <div class="sql-code" style="display: none;">${highlightSQL(sqlCode)}</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('chat-container').appendChild(div);
+}
+
+function toggleSql(btn) {
+  const codeBlock = btn.parentElement.nextElementSibling;
+  if (codeBlock.style.display === 'none') { codeBlock.style.display = 'block'; btn.innerHTML = '🙈 Hide Query'; } 
+  else { codeBlock.style.display = 'none'; btn.innerHTML = '👁️ Show Query'; }
+}
+
+function copyFullSQL(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(() => { 
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!'; btn.classList.add('highlight'); 
+    setTimeout(()=> { btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy'; btn.classList.remove('highlight'); }, 2000); 
+  });
+}
+
+function openInSuperset(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(()=>{ 
+    window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'); showToast('SQL copied! Press Ctrl+V in Superset'); 
+  }).catch(()=>window.open('https://ppsl-query.paytmpayments.com/sqllab/','_blank'));
+}
+
+function addErrorMsg(msg) {
+  const d=document.createElement('div'); d.className='msg assistant';
+  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar" style="background:var(--danger)">!</div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
+  document.getElementById('chat-container').appendChild(d);
+}
+
+function highlightSQL(sql) {
+  const kws=['SELECT','FROM','WHERE','LEFT JOIN','RIGHT JOIN','INNER JOIN','JOIN','ON','GROUP BY','ORDER BY','HAVING','LIMIT','UNION','WITH','AS','AND','OR','NOT','IN','IS','NULL','DISTINCT','COUNT','SUM','AVG','MIN','MAX','CASE','WHEN','THEN','ELSE','END','BY','ASC','DESC','DATE_ADD','DATE_TRUNC','CURRENT_DATE','LOWER','UPPER','CAST','COALESCE','ROW_NUMBER','OVER','PARTITION','BETWEEN','LIKE','CONCAT','JSON_EXTRACT_SCALAR','DATE','INTERVAL','TIMESTAMP'];
+  let out=escHtml(sql).replace(/(--[^\n]*)/g,'<span class="cmt">$1</span>');
+  kws.sort((a,b)=>b.length-a.length).forEach(kw=>{ out=out.replace(new RegExp(`\\b(${kw.replace(/ /g,'\\s+')})\\b`,'gi'),'<span class="kw">$1</span>'); });
