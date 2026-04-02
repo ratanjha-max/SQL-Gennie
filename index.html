@@ -491,7 +491,7 @@
         <p>Share MID and duration</p>
         <div class="suggestion-chips">
           <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
-            <span>Transaction Report</span>
+            <span>Transaction Query</span>
             "txn for mid qugeem... 1 april to till date"
           </div>
           <div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month'; document.getElementById('query-input').focus();">
@@ -912,7 +912,7 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">🧞</div><h2>I can share you the updated SQL query.</h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Report</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">🧞</div><h2>I can share you the updated SQL query.</h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
 }
 
 function addUserMsg(t) {
