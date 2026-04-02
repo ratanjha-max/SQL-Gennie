@@ -487,7 +487,7 @@
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
         <div class="welcome-icon">🧞</div>
-        <h2>I can share the updated SQL query</h2>
+        <h2>I can share the updated SQL query 😊📊 😊📊</h2>
         <p>Share MID and duration</p>
         <div class="suggestion-chips">
           <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
@@ -618,7 +618,7 @@ function generateSettlementQuery() {
   chatHistory = []; clearChatUI();
   addUserMsg(`Generate Settlement query for MID: ${mid}`);
   const sql = buildSettlementSQL(mid, startDate, endDate);
-  addAssistantMsg(sql, `I can share the updated SQL query for Settlement.`);
+  addAssistantMsg(sql, `I can share the updated SQL query 😊📊 😊📊 for Settlement.`);
 }
 
 // ── SQL TEMPLATES ──
@@ -874,7 +874,7 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           document.getElementById('date-to').value = p.end_date;
           document.getElementById('custom-date').checked = true;
           const sql = p.intent==='settlement' ? buildSettlementSQL(cleanMid,p.start_date,p.end_date) : buildTransactionSQL(cleanMid,p.start_date,p.end_date);
-          addAssistantMsg(sql, `I can share the updated SQL query.`);
+          addAssistantMsg(sql, `I can share the updated SQL query 😊📊 😊📊.`);
           chatHistory.push({role:'assistant',content:raw});
         } else if (p.intent==='clarify' && p.mid && p.start_date && p.end_date) {
           const cleanMid = p.mid.trim().toLowerCase();
@@ -886,11 +886,11 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           addTextOnlyMsg(msg);
           chatHistory.push({role:'assistant',content:msg});
         } else {
-          addAssistantMsg(p.sql||raw, p.explanation||'I can share the updated SQL query.');
+          addAssistantMsg(p.sql||raw, p.explanation||'I can share the updated SQL query 😊📊 😊📊.');
           chatHistory.push({role:'assistant',content:raw});
         }
       } catch {
-        addAssistantMsg(raw, 'I can share the updated SQL query.');
+        addAssistantMsg(raw, 'I can share the updated SQL query 😊📊 😊📊.');
         chatHistory.push({role:'assistant',content:raw});
       }
     }
@@ -912,7 +912,7 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">🧞</div><h2>I can share the updated SQL query</h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon">🧞</div><h2>I can share the updated SQL query 😊📊 😊📊</h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -955,7 +955,7 @@ function addTextOnlyMsg(text) {
 function addAssistantMsg(sqlCode, explanation) {
   const div=document.createElement('div'); div.className='msg assistant';
   const safeSql=encodeURIComponent(sqlCode);
-  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'I can share the updated SQL query.';
+  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'I can share the updated SQL query 😊📊 😊📊.';
   div.innerHTML=`<div class="msg-inner">
     <div class="msg-avatar">
       <div class="av-ring"><div class="av-inner">🧞</div></div>
