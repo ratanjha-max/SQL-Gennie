@@ -51,7 +51,7 @@
     position: relative;
   }
 
-  /* ══ ENHANCED AMBIENT GLOW — MORE COLOURS, RICHER EFFECTS ══ */
+  /* ══ ENHANCED AMBIENT GLOW ══ */
   .ambient-glow {
     position: fixed;
     border-radius: 50%;
@@ -62,7 +62,6 @@
   }
   body.light-mode .ambient-glow { opacity: 0.12; filter: blur(80px); }
 
-  /* Each glow has its own color animation */
   .glow-1 {
     width: 550px; height: 550px;
     top: -120px; left: -120px;
@@ -101,7 +100,6 @@
     100% { background: #0f766e; transform: scale(1) translate(0,0); }
   }
 
-  /* NEW — extra subtle glows for richness */
   .glow-4 {
     width: 300px; height: 300px;
     top: 10%; right: 20%;
@@ -128,42 +126,6 @@
   #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
   .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; }
 
-  /* Premium bot avatar on login */
-  .login-logo {
-    width: 80px; height: 80px;
-    margin: 0 auto 18px;
-    position: relative;
-  }
-  .login-logo .avatar-ring {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    padding: 3px;
-    animation: spinRing 8s linear infinite;
-  }
-  @keyframes spinRing {
-    0% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-    33% { background: linear-gradient(135deg, #06b6d4, #3b82f6, #ec4899); }
-    66% { background: linear-gradient(135deg, #8b5cf6, #06b6d4, #3b82f6); }
-    100% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-  }
-  .login-logo .avatar-inner {
-    width: 100%; height: 100%; border-radius: 50%;
-    background: #0a0a14;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 38px;
-    box-shadow: inset 0 0 20px rgba(59,130,246,0.3);
-  }
-  .login-logo .avatar-glow {
-    position: absolute; inset: -4px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%);
-    animation: glowPulse 2s ease-in-out infinite;
-  }
-  @keyframes glowPulse {
-    0%,100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-  }
-
   .login-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; color: var(--text-primary); }
   .login-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
   .form-group { margin-bottom: 16px; text-align: left; position: relative; z-index: 10; }
@@ -183,8 +145,7 @@
   #app.visible { display: flex; }
 
   /* ══ SIDEBAR ══ */
-  .sidebar { width: 260px; background: var(--bg-sidebar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.3s; flex-shrink: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);}
-  .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar { width: 280px; background: var(--bg-sidebar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.3s; flex-shrink: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);}
   .sidebar-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
   /* Superset Link Card */
@@ -207,13 +168,6 @@
   .superset-card-top {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 8px;
-  }
-  .superset-icon {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: linear-gradient(135deg, #00baf2, #002970);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0,186,242,0.3);
   }
   .superset-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
   .superset-sub { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
@@ -270,7 +224,6 @@
   #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   .welcome-msg { text-align: center; padding: 60px 20px; max-width: 650px; margin: 0 auto; }
-  .welcome-icon { font-size: 64px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.3)); }
   .welcome-msg h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
   .welcome-msg p { color: var(--text-secondary); font-size: 15px; margin-bottom: 40px; }
   .suggestion-chips { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -281,41 +234,11 @@
   /* Messages */
   .msg { padding: 24px 24px; display: flex; justify-content: center; border-bottom: 1px solid transparent; animation: fadeIn 0.3s ease-out;}
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .msg-inner { max-width: 800px; width: 100%; display: flex; gap: 20px; }
+  .msg-inner { max-width: 850px; width: 100%; display: flex; gap: 20px; }
  
   .msg.user .msg-inner { flex-direction: row-reverse; }
   .msg.user .msg-content { background: var(--bg-surface); backdrop-filter: blur(10px); padding: 14px 18px; border-radius: var(--radius-md); border-bottom-right-radius: 4px; font-size: 15px; line-height: 1.6; max-width: 80%; border: 1px solid var(--border); box-shadow: var(--shadow-sm);}
   .msg.assistant { background: transparent; }
-
-  /* ══ PREMIUM BOT AVATAR ══ */
-  .msg-avatar {
-    width: 40px; height: 40px; flex-shrink: 0;
-    position: relative;
-  }
-  .msg-avatar .av-ring {
-    width: 40px; height: 40px; border-radius: 12px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    padding: 2px;
-    animation: avSpin 6s linear infinite;
-  }
-  @keyframes avSpin {
-    0%   { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-    33%  { background: linear-gradient(225deg, #06b6d4, #3b82f6, #ec4899); }
-    66%  { background: linear-gradient(315deg, #8b5cf6, #06b6d4, #f59e0b); }
-    100% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-  }
-  .msg-avatar .av-inner {
-    width: 100%; height: 100%; border-radius: 10px;
-    background: linear-gradient(160deg, #0d1117, #1a1f2e);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-  }
-  .msg-avatar .av-glow {
-    position: absolute; inset: -3px; border-radius: 14px;
-    background: transparent;
-    box-shadow: 0 0 12px rgba(59,130,246,0.4), 0 0 24px rgba(139,92,246,0.2);
-    pointer-events: none;
-  }
 
   .msg.assistant .msg-content { flex: 1; font-size: 15px; line-height: 1.7; color: var(--text-primary); }
  
@@ -323,17 +246,20 @@
   .explain-block strong { color: var(--text-primary); }
  
   .sql-wrapper { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-top: 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); box-shadow: var(--shadow-md);}
-  .sql-header { display: flex; justify-content: space-between; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
+  .sql-header { display: flex; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
   body.light-mode .sql-header { background: rgba(0,0,0,0.03); }
   .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase;}
  
-  .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
-  .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
- 
-  .sql-actions { display: flex; gap: 8px; }
-  .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 4px 10px; border-radius: 4px;}
+  /* ══ NEW SQL ACTION BAR ALIGNMENT ══ */
+  .sql-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 6px 12px; border-radius: 4px;}
   .btn-code:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
   .btn-code.highlight { color: var(--success); border-color: var(--success); }
+  
+  /* Primary Action Button style inside SQL block */
+  .btn-code.primary-action { background: linear-gradient(135deg, #3b82f6, #0ea5e9); color: #fff; border: none; box-shadow: 0 2px 10px rgba(59,130,246,0.3); font-weight: 600; }
+  .btn-code.primary-action:hover { background: linear-gradient(135deg, #2563eb, #0284c7); box-shadow: 0 4px 15px rgba(59,130,246,0.5); transform: translateY(-1px); }
+
   .sql-code { padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #e2e8f0; overflow-x: auto; white-space: pre; line-height: 1.6;}
   .kw { color: #c678dd; font-weight: 600;}
   .str { color: #98c379; }
@@ -375,11 +301,8 @@
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="avatar-ring">
-        <div class="avatar-inner"></div>
-      </div>
-      <div class="avatar-glow"></div>
+    <div style="margin-bottom: 20px;">
+      <img src="ginny_logo.png" alt="Ginny Logo" style="width: 85px; height: 85px; border-radius: 50%; box-shadow: 0 0 25px rgba(59,130,246,0.6); object-fit: cover; background: #000;">
     </div>
     <div class="login-title">SQL Ginny</div>
     <div class="login-subtitle">Enterprise Data Intelligence</div>
@@ -402,17 +325,15 @@
 <div id="app">
  
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-      SQL Ginny
+    <div style="text-align: center; padding: 35px 20px 25px; border-bottom: 1px solid var(--border);">
+      <img src="ginny_logo.png" alt="Ginny Logo" style="width: 90px; height: 90px; border-radius: 50%; box-shadow: 0 0 30px rgba(59,130,246,0.5); object-fit: cover; margin-bottom: 16px; background: #000;">
+      <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px;">SQL Ginny</h2>
     </div>
 
     <div class="sidebar-content">
-
       <a class="superset-card" href="https://ppsl-query.paytmpayments.com/sqllab/" target="_blank" rel="noopener noreferrer">
         <div class="superset-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div class="superset-icon"></div>
             <div>
               <div class="superset-label">Open Superset</div>
               <div class="superset-sub">Paytm Query Environment</div>
@@ -427,17 +348,11 @@
       </a>
 
       <div class="quick-tools">
-        <button class="tool-btn" onclick="clearChat()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          New Session
-        </button>
-
         <label class="tool-btn" style="margin-top: 8px; width: 100%; display: flex;" title="Upload CSV for BW Recon">
           <input type="file" id="bw-csv-upload" accept=".csv" onchange="processBWCSV(this)" style="display:none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           BW Recon (Upload CSV)
         </label>
-
       </div>
 
     </div>
@@ -479,15 +394,16 @@
       </div>
 
       <button class="btn-run" id="generate-btn" onclick="generateSettlementQuery()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         Execute
       </button>
     </header>
 
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
-        <div class="welcome-icon"></div>
-        <h2>Get the updated SQL Query Instantly ⚡  </h2>
+        <div style="margin-bottom:24px;">
+          <img src="ginny_logo.png" alt="Ginny" style="width:100px; height:100px; border-radius:50%; box-shadow: 0 0 20px rgba(59,130,246,0.3); object-fit:cover;">
+        </div>
+        <h2>Get the updated SQL query  </h2>
         <p>Share MID and duration</p>
         <div class="suggestion-chips">
           <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
@@ -619,7 +535,7 @@ function generateSettlementQuery() {
   chatHistory = []; clearChatUI();
   addUserMsg(`Generate Settlement query for MID: ${mid}`);
   const sql = buildSettlementSQL(mid, startDate, endDate);
-  addAssistantMsg(sql, `Get the updated SQL Query Instantly ⚡   for Settlement.`);
+  addAssistantMsg(sql, `Get the updated SQL query   for Settlement.`);
 }
 
 // ── SQL TEMPLATES ──
@@ -875,7 +791,7 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           document.getElementById('date-to').value = p.end_date;
           document.getElementById('custom-date').checked = true;
           const sql = p.intent==='settlement' ? buildSettlementSQL(cleanMid,p.start_date,p.end_date) : buildTransactionSQL(cleanMid,p.start_date,p.end_date);
-          addAssistantMsg(sql, `Get the updated SQL Query Instantly ⚡  .`);
+          addAssistantMsg(sql, `Get the updated SQL query  .`);
           chatHistory.push({role:'assistant',content:raw});
         } else if (p.intent==='clarify' && p.mid && p.start_date && p.end_date) {
           const cleanMid = p.mid.trim().toLowerCase();
@@ -887,11 +803,11 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           addTextOnlyMsg(msg);
           chatHistory.push({role:'assistant',content:msg});
         } else {
-          addAssistantMsg(p.sql||raw, p.explanation||'Get the updated SQL Query Instantly ⚡  .');
+          addAssistantMsg(p.sql||raw, p.explanation||'Get the updated SQL query  .');
           chatHistory.push({role:'assistant',content:raw});
         }
       } catch {
-        addAssistantMsg(raw, 'Get the updated SQL Query Instantly ⚡  .');
+        addAssistantMsg(raw, 'Get the updated SQL query  .');
         chatHistory.push({role:'assistant',content:raw});
       }
     }
@@ -1079,7 +995,11 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon"></div><h2>Get the updated SQL Query Instantly ⚡  </h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome">
+    <div style="margin-bottom:24px;">
+      <img src="ginny_logo.png" alt="Ginny" style="width:100px; height:100px; border-radius:50%; box-shadow: 0 0 20px rgba(59,130,246,0.3); object-fit:cover;">
+    </div>
+    <h2>Get the updated SQL query  </h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -1093,9 +1013,8 @@ function addUserMsg(t) {
 function addThinking() {
   const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
   d.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <img src="ginny_logo.png" alt="Ginny" style="width:100%; height:100%; border-radius:50%; object-fit:cover; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
     </div>
     <div class="msg-content"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
   </div>`;
@@ -1109,9 +1028,8 @@ function addTextOnlyMsg(text) {
   const div=document.createElement('div'); div.className='msg assistant';
   let fText=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>').replace(/\n/g,'<br>');
   div.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <img src="ginny_logo.png" alt="Ginny" style="width:100%; height:100%; border-radius:50%; object-fit:cover; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
     </div>
     <div class="msg-content">${fText}</div>
   </div>`;
@@ -1123,9 +1041,8 @@ function addCustomHtmlMsg(htmlContent, explanation) {
   const div = document.createElement('div'); div.className = 'msg assistant';
   let fExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   div.innerHTML = `<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <img src="ginny_logo.png" alt="Ginny" style="width:100%; height:100%; border-radius:50%; object-fit:cover; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
     </div>
     <div class="msg-content">
       <div style="margin-bottom:8px; color:var(--text-secondary);">${fExp}</div>
@@ -1139,47 +1056,47 @@ function addCustomHtmlMsg(htmlContent, explanation) {
 function addAssistantMsg(sqlCode, explanation) {
   const div=document.createElement('div'); div.className='msg assistant';
   const safeSql=encodeURIComponent(sqlCode);
-  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'Get the updated SQL Query Instantly ⚡  .';
+  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'Get the updated SQL query  .';
+  
+  // Notice: The "New Session" button is embedded strictly within this action bar array
   div.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <img src="ginny_logo.png" alt="Ginny" style="width:100%; height:100%; border-radius:50%; object-fit:cover; box-shadow: 0 0 10px rgba(59,130,246,0.4);">
     </div>
     <div class="msg-content">
       <div class="explain-block">${fExp}</div>
       <div class="sql-wrapper">
         <div class="sql-header">
           <span class="sql-lang">SQL</span>
-          <button class="toggle-sql-btn" onclick="toggleSql(this)"> Show Query</button>
-          <div class="sql-actions">
-            <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Copy
-            </button>
-            <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00baf2;border-color:rgba(0,186,242,0.3);">
-               Open Superset
-            </button>
+          <div class="sql-actions" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+            <button class="btn-code toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
+            
+            <button class="btn-code" onclick="clearChat()" style="background:linear-gradient(135deg, #3b82f6, #0ea5e9); color:#fff; border:none; box-shadow:0 2px 8px rgba(59,130,246,0.3);">✨ New Session</button>
+            
+            <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">📋 Copy</button>
+            <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00baf2;border-color:rgba(0,186,242,0.3);">↗ Open in Superset</button>
           </div>
         </div>
         <div class="sql-code" style="display:none;">${highlightSQL(sqlCode)}</div>
       </div>
     </div>
   </div>`;
+  
   document.getElementById('chat-container').appendChild(div);
   scrollBottom();
 }
 
 function toggleSql(btn) {
-  const codeBlock=btn.parentElement.nextElementSibling;
-  if(codeBlock.style.display==='none'){codeBlock.style.display='block';btn.innerHTML=' Hide Query';}
-  else{codeBlock.style.display='none';btn.innerHTML=' Show Query';}
+  const codeBlock=btn.parentElement.parentElement.nextElementSibling;
+  if(codeBlock.style.display==='none'){codeBlock.style.display='block';btn.innerHTML='🙈 Hide Query';}
+  else{codeBlock.style.display='none';btn.innerHTML='👁️ Show Query';}
 }
 
 function copyFullSQL(btn) {
   navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(()=>{
     btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
     btn.classList.add('highlight');
-    setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';btn.classList.remove('highlight');},2000);
+    setTimeout(()=>{btn.innerHTML='📋 Copy';btn.classList.remove('highlight');},2000);
   });
 }
 
@@ -1192,7 +1109,7 @@ function openInSuperset(btn) {
 
 function addErrorMsg(msg) {
   const d=document.createElement('div'); d.className='msg assistant';
-  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar"><div class="av-ring" style="background:#ef4444;"><div class="av-inner">!</div></div></div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
+  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar" style="background:transparent; box-shadow:none;"><img src="ginny_logo.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover; box-shadow: 0 0 10px rgba(239,68,68,0.4); border: 2px solid var(--danger);"></div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
   document.getElementById('chat-container').appendChild(d);
   scrollBottom();
 }
@@ -1205,7 +1122,7 @@ function highlightSQL(sql) {
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function scrollBottom(){ const c=document.getElementById('chat-container'); c.scrollTop=c.scrollHeight; }
+function scrollBottom(){ /* Auto-scroll disabled */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
