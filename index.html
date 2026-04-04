@@ -124,6 +124,37 @@
     100% { background: #818cf8; opacity: 0.18; transform: scale(0.85); }
   }
 
+  /* ══ NEW: MAGICAL GINNY AVATAR GLOW ══ */
+  .ginny-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: 50%;
+  }
+  .ginny-avatar-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 180deg at 50% 50%, #00f2fe 0deg, #8b5cf6 120deg, #06b6d4 240deg, #00f2fe 360deg);
+    filter: blur(8px);
+    z-index: 0;
+    opacity: 0.8;
+    animation: magicSpin 3s linear infinite;
+  }
+  @keyframes magicSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .ginny-avatar-img {
+    position: relative;
+    z-index: 1;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
   /* ══ LOGIN ══ */
   #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
   .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; }
@@ -134,36 +165,7 @@
     margin: 0 auto 18px;
     position: relative;
   }
-  .login-logo .avatar-ring {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    padding: 3px;
-    animation: spinRing 8s linear infinite;
-  }
-  @keyframes spinRing {
-    0% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-    33% { background: linear-gradient(135deg, #06b6d4, #3b82f6, #ec4899); }
-    66% { background: linear-gradient(135deg, #8b5cf6, #06b6d4, #3b82f6); }
-    100% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-  }
-  .login-logo .avatar-inner {
-    width: 100%; height: 100%; border-radius: 50%;
-    background: #0a0a14;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 38px;
-    box-shadow: inset 0 0 20px rgba(59,130,246,0.3);
-  }
-  .login-logo .avatar-glow {
-    position: absolute; inset: -4px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%);
-    animation: glowPulse 2s ease-in-out infinite;
-  }
-  @keyframes glowPulse {
-    0%,100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-  }
-
+  
   .login-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; color: var(--text-primary); }
   .login-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
   .form-group { margin-bottom: 16px; text-align: left; position: relative; z-index: 10; }
@@ -270,7 +272,6 @@
   #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   .welcome-msg { text-align: center; padding: 60px 20px; max-width: 650px; margin: 0 auto; }
-  .welcome-icon { font-size: 64px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(59,130,246,0.3)); }
   .welcome-msg h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
   .welcome-msg p { color: var(--text-secondary); font-size: 15px; margin-bottom: 40px; }
   .suggestion-chips { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -287,36 +288,7 @@
   .msg.user .msg-content { background: var(--bg-surface); backdrop-filter: blur(10px); padding: 14px 18px; border-radius: var(--radius-md); border-bottom-right-radius: 4px; font-size: 15px; line-height: 1.6; max-width: 80%; border: 1px solid var(--border); box-shadow: var(--shadow-sm);}
   .msg.assistant { background: transparent; }
 
-  /* ══ PREMIUM BOT AVATAR ══ */
-  .msg-avatar {
-    width: 40px; height: 40px; flex-shrink: 0;
-    position: relative;
-  }
-  .msg-avatar .av-ring {
-    width: 40px; height: 40px; border-radius: 12px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    padding: 2px;
-    animation: avSpin 6s linear infinite;
-  }
-  @keyframes avSpin {
-    0%   { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-    33%  { background: linear-gradient(225deg, #06b6d4, #3b82f6, #ec4899); }
-    66%  { background: linear-gradient(315deg, #8b5cf6, #06b6d4, #f59e0b); }
-    100% { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); }
-  }
-  .msg-avatar .av-inner {
-    width: 100%; height: 100%; border-radius: 10px;
-    background: linear-gradient(160deg, #0d1117, #1a1f2e);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-  }
-  .msg-avatar .av-glow {
-    position: absolute; inset: -3px; border-radius: 14px;
-    background: transparent;
-    box-shadow: 0 0 12px rgba(59,130,246,0.4), 0 0 24px rgba(139,92,246,0.2);
-    pointer-events: none;
-  }
-
+  /* Removed old avatar styles because we are using images now */
   .msg.assistant .msg-content { flex: 1; font-size: 15px; line-height: 1.7; color: var(--text-primary); }
  
   .explain-block { margin-bottom: 16px; color: var(--text-secondary); }
@@ -376,10 +348,10 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="avatar-ring">
-        <div class="avatar-inner"></div>
+      <div class="ginny-avatar-wrapper" style="width: 80px; height: 80px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
       </div>
-      <div class="avatar-glow"></div>
     </div>
     <div class="login-title">SQL Ginny</div>
     <div class="login-subtitle">Enterprise Data Intelligence</div>
@@ -426,21 +398,7 @@
         </div>
       </a>
 
-      <div class="quick-tools">
-        <button class="tool-btn" onclick="clearChat()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          New Session
-        </button>
-
-        <label class="tool-btn" style="margin-top: 8px; width: 100%; display: flex;" title="Upload CSV for BW Recon">
-          <input type="file" id="bw-csv-upload" accept=".csv" onchange="processBWCSV(this)" style="display:none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          BW Recon (Upload CSV)
-        </label>
-
       </div>
-
-    </div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
@@ -486,8 +444,13 @@
 
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
-        <div class="welcome-icon"></div>
-        <h2>Get the updated SQL Query Instantly ⚡  </h2>
+        <div style="margin-bottom: 20px;">
+          <div class="ginny-avatar-wrapper" style="width: 100px; height: 100px;">
+            <div class="ginny-avatar-glow"></div>
+            <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
+          </div>
+        </div>
+        <h2>Get the updated SQL query  </h2>
         <p>Share MID and duration</p>
         <div class="suggestion-chips">
           <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
@@ -531,7 +494,6 @@ let msgCount = 0;
 
 const fmt = d => (d instanceof Date ? d : new Date(d+'T00:00:00')).toISOString().split('T')[0];
 const fmtDisplay = ds => new Date(ds+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const fmtMoney = val => '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
 // ── THEME ──
 function toggleTheme() {
@@ -619,7 +581,7 @@ function generateSettlementQuery() {
   chatHistory = []; clearChatUI();
   addUserMsg(`Generate Settlement query for MID: ${mid}`);
   const sql = buildSettlementSQL(mid, startDate, endDate);
-  addAssistantMsg(sql, `Get the updated SQL Query Instantly ⚡   for Settlement.`);
+  addAssistantMsg(sql, `Get the updated SQL query   for Settlement.`);
 }
 
 // ── SQL TEMPLATES ──
@@ -875,7 +837,7 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           document.getElementById('date-to').value = p.end_date;
           document.getElementById('custom-date').checked = true;
           const sql = p.intent==='settlement' ? buildSettlementSQL(cleanMid,p.start_date,p.end_date) : buildTransactionSQL(cleanMid,p.start_date,p.end_date);
-          addAssistantMsg(sql, `Get the updated SQL Query Instantly ⚡  .`);
+          addAssistantMsg(sql, `Get the updated SQL query  .`);
           chatHistory.push({role:'assistant',content:raw});
         } else if (p.intent==='clarify' && p.mid && p.start_date && p.end_date) {
           const cleanMid = p.mid.trim().toLowerCase();
@@ -887,11 +849,11 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           addTextOnlyMsg(msg);
           chatHistory.push({role:'assistant',content:msg});
         } else {
-          addAssistantMsg(p.sql||raw, p.explanation||'Get the updated SQL Query Instantly ⚡  .');
+          addAssistantMsg(p.sql||raw, p.explanation||'Get the updated SQL query  .');
           chatHistory.push({role:'assistant',content:raw});
         }
       } catch {
-        addAssistantMsg(raw, 'Get the updated SQL Query Instantly ⚡  .');
+        addAssistantMsg(raw, 'Get the updated SQL query  .');
         chatHistory.push({role:'assistant',content:raw});
       }
     }
@@ -901,172 +863,6 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
   }
   document.getElementById('send-btn').disabled = false;
   document.getElementById('query-input').focus();
-}
-
-// ── FILE UPLOAD AUTO RECON ──
-function processBWCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
-  addUserMsg(`📊 Uploaded BW Recon File: ${file.name}`);
-  addThinking();
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const text = e.target.result;
-      const rows = text.split('\n');
-      if (rows.length < 2) throw new Error("File is empty or invalid.");
-
-      const headers = rows[0].split(',').map(h => h.replace(/['"]/g, '').trim());
-      const idxDate = headers.findIndex(h => h === 'Updated_Date');
-      const idxType = headers.findIndex(h => h === 'Transaction_Type');
-      const idxStatus = headers.findIndex(h => h === 'Status');
-      const idxAmount = headers.findIndex(h => h === 'Amount');
-      const idxComm = headers.findIndex(h => h === 'Commission');
-      const idxGST = headers.findIndex(h => h === 'GST');
-      const idxUTR = headers.findIndex(h => h === 'UTR_No.');
-
-      if (idxDate === -1 || idxType === -1 || idxAmount === -1) throw new Error("Missing required columns in CSV.");
-
-      let reconData = {};
-      let pendingM2BTotal = 0;
-      let pendingM2BCount = 0;
-
-      for (let i = 1; i < rows.length; i++) {
-        if (!rows[i].trim()) continue;
-
-        let cols = [];
-        let inQuote = false;
-        let currentVal = '';
-        for(let char of rows[i]) {
-            if(char === '"' || char === "'") inQuote = !inQuote;
-            else if(char === ',' && !inQuote) { cols.push(currentVal); currentVal = ''; }
-            else currentVal += char;
-        }
-        cols.push(currentVal);
-
-        const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
-
-        const status = getVal(idxStatus).toUpperCase();
-        const type = getVal(idxType).toUpperCase();
-        const amount = parseFloat(getVal(idxAmount)) || 0;
-        const comm = parseFloat(getVal(idxComm)) || 0;
-        const gst = parseFloat(getVal(idxGST)) || 0;
-
-        if ((type === 'M2B' || type === 'TRANSFER_TO_BANK') && status === 'PENDING') {
-            pendingM2BTotal += amount;
-            pendingM2BCount++;
-            continue;
-        }
-
-        let isBase = (type === 'ACQUIRING' && status === 'SUCCESS');
-        let isCbRev = type === 'CHARGEBACK_REVERSAL';
-        let isRecRev = type === 'RECOVERY_REVERSAL';
-        let isCb = type === 'CHARGEBACK';
-        let isDispute = type === 'DISPUTE';
-        let isRecDr = type === 'RECOVERY_DEBIT';
-        let isRefund = type === 'REFUND';
-        
-        if (!isBase && !isCbRev && !isRecRev && !isCb && !isDispute && !isRecDr && !isRefund) continue;
-
-        const rawDate = getVal(idxDate);
-        let date = rawDate ? rawDate.split(' ')[0] : 'N/A';
-        let utr = getVal(idxUTR) || 'PENDING/NO UTR';
-
-        const key = `${date}|${utr}`;
-        if (!reconData[key]) reconData[key] = { 
-            date, utr, base: 0, refund: 0, cb: 0, dispute: 0, rec_dr: 0, cb_rev: 0, rec_rev: 0, fees: 0 
-        };
-
-        if (isBase) { reconData[key].base += amount; reconData[key].fees += (comm + gst); }
-        else if (isRefund) { reconData[key].refund += amount; }
-        else if (isCb) { reconData[key].cb += amount; }
-        else if (isDispute) { reconData[key].dispute += amount; }
-        else if (isRecDr) { reconData[key].rec_dr += amount; }
-        else if (isCbRev) { reconData[key].cb_rev += amount; }
-        else if (isRecRev) { reconData[key].rec_rev += amount; }
-        
-        if (!isBase) reconData[key].fees += (comm + gst); 
-      }
-
-      let alertHtml = '';
-      if (pendingM2BCount > 0) {
-          alertHtml = `
-            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
-              <span style="font-size: 24px;">⏳</span>
-              <div>
-                <div style="color: var(--danger); font-weight: 700; font-size: 14px; margin-bottom:4px;">Pending Bank Transfer Detected</div>
-                <div style="color: var(--text-primary); font-size: 13px;">${pendingM2BCount} M2B transaction(s) pending. Total Amount: <b style="font-family:monospace; font-size:14px;">${fmtMoney(pendingM2BTotal)}</b></div>
-              </div>
-            </div>
-          `;
-      }
-
-      let htmlTable = alertHtml + `
-        <div class="recon-table-wrap" style="overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-sm); margin-top:16px;">
-        <table class="recon-table" style="width:100%; border-collapse:collapse; font-size:12px; text-align:right;">
-          <thead style="background:rgba(255,255,255,0.05); font-size:10px; text-transform:uppercase; color:var(--text-secondary);">
-            <tr>
-              <th style="padding:10px; text-align:left; border-bottom:1px solid var(--border);">Date</th>
-              <th style="padding:10px; text-align:left; border-bottom:1px solid var(--border);">UTR No.</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border);" title="ACQUIRING (Success)">Acquiring</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--success);" title="CHARGEBACK_REVERSAL">+ CB Rev</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--success);" title="RECOVERY_REVERSAL">+ Rec Rev</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="REFUND">- Refund</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="CHARGEBACK">- CB</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="DISPUTE">- Dispute</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="RECOVERY_DEBIT">- Rec Dr</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="Commission + GST">- Comm&GST</th>
-              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--accent);">Net Settled</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      let hasData = false;
-      const sortedKeys = Object.keys(reconData).sort();
-
-      for (let key of sortedKeys) {
-        const d = reconData[key];
-        const adds = d.cb_rev + d.rec_rev;
-        const deds = d.refund + d.cb + d.dispute + d.rec_dr;
-        const net = d.base + adds - deds - d.fees;
-        
-        if (d.base > 0 || adds > 0 || deds > 0) {
-          hasData = true;
-          const fDate = d.date !== 'N/A' ? new Date(d.date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
-          
-          htmlTable += `
-            <tr style="border-bottom:1px solid var(--border);">
-              <td style="padding:10px; text-align:left; white-space:nowrap;">${fDate}</td>
-              <td style="padding:10px; text-align:left; font-family:monospace; color:var(--accent); white-space:nowrap;">${d.utr}</td>
-              <td style="padding:10px;">${fmtMoney(d.base)}</td>
-              <td style="padding:10px; color:${d.cb_rev > 0 ? 'var(--success)' : 'inherit'};">${fmtMoney(d.cb_rev)}</td>
-              <td style="padding:10px; color:${d.rec_rev > 0 ? 'var(--success)' : 'inherit'};">${fmtMoney(d.rec_rev)}</td>
-              <td style="padding:10px; color:${d.refund > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.refund)}</td>
-              <td style="padding:10px; color:${d.cb > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.cb)}</td>
-              <td style="padding:10px; color:${d.dispute > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.dispute)}</td>
-              <td style="padding:10px; color:${d.rec_dr > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.rec_dr)}</td>
-              <td style="padding:10px; color:${d.fees > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.fees)}</td>
-              <td style="padding:10px; font-weight:700; color:var(--text-primary);">${fmtMoney(net)}</td>
-            </tr>
-          `;
-        }
-      }
-      htmlTable += `</tbody></table></div>`;
-
-      removeThinking();
-      if (!hasData) addErrorMsg("No valid BW settlement data found in the file.");
-      else addCustomHtmlMsg(htmlTable, `✅ **BW Reconciliation Complete!** Detailed component breakdown generated.`);
-    } catch(err) {
-      removeThinking();
-      addErrorMsg("Failed to parse CSV: " + err.message);
-    }
-    input.value = ''; 
-  };
-  reader.readAsText(file);
 }
 
 // ── UI HELPERS ──
@@ -1079,7 +875,14 @@ function clearChat() {
   const today=new Date(), lastYear=new Date(today); lastYear.setFullYear(today.getFullYear()-1);
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
-  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome"><div class="welcome-icon"></div><h2>Get the updated SQL Query Instantly ⚡  </h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+  document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome">
+    <div style="margin-bottom:20px;">
+      <div class="ginny-avatar-wrapper" style="width: 100px; height: 100px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
+      </div>
+    </div>
+    <h2>Get the updated SQL query  </h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
 }
 
 function addUserMsg(t) {
@@ -1093,9 +896,9 @@ function addUserMsg(t) {
 function addThinking() {
   const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
   d.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+      <div class="ginny-avatar-glow"></div>
+      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
     </div>
     <div class="msg-content"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
   </div>`;
@@ -1109,28 +912,11 @@ function addTextOnlyMsg(text) {
   const div=document.createElement('div'); div.className='msg assistant';
   let fText=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>').replace(/\n/g,'<br>');
   div.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+      <div class="ginny-avatar-glow"></div>
+      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
     </div>
     <div class="msg-content">${fText}</div>
-  </div>`;
-  document.getElementById('chat-container').appendChild(div);
-  scrollBottom();
-}
-
-function addCustomHtmlMsg(htmlContent, explanation) {
-  const div = document.createElement('div'); div.className = 'msg assistant';
-  let fExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  div.innerHTML = `<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
-    </div>
-    <div class="msg-content">
-      <div style="margin-bottom:8px; color:var(--text-secondary);">${fExp}</div>
-      ${htmlContent}
-    </div>
   </div>`;
   document.getElementById('chat-container').appendChild(div);
   scrollBottom();
@@ -1139,11 +925,11 @@ function addCustomHtmlMsg(htmlContent, explanation) {
 function addAssistantMsg(sqlCode, explanation) {
   const div=document.createElement('div'); div.className='msg assistant';
   const safeSql=encodeURIComponent(sqlCode);
-  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'Get the updated SQL Query Instantly ⚡  .';
+  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'Get the updated SQL query  .';
   div.innerHTML=`<div class="msg-inner">
-    <div class="msg-avatar">
-      <div class="av-ring"><div class="av-inner"></div></div>
-      <div class="av-glow"></div>
+    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+      <div class="ginny-avatar-glow"></div>
+      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
     </div>
     <div class="msg-content">
       <div class="explain-block">${fExp}</div>
@@ -1151,15 +937,23 @@ function addAssistantMsg(sqlCode, explanation) {
         <div class="sql-header">
           <span class="sql-lang">SQL</span>
           <button class="toggle-sql-btn" onclick="toggleSql(this)"> Show Query</button>
+          
           <div class="sql-actions">
+            
+            <button class="btn-code" onclick="clearChat()" style="color:#ffffff; background:linear-gradient(135deg, #0ea5e9, #3b82f6); border:none; box-shadow:0 2px 10px rgba(59,130,246,0.3);">
+              ✨ New Session
+            </button>
+            
             <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               Copy
             </button>
+            
             <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00baf2;border-color:rgba(0,186,242,0.3);">
-               Open Superset
+               Open in Superset
             </button>
           </div>
+
         </div>
         <div class="sql-code" style="display:none;">${highlightSQL(sqlCode)}</div>
       </div>
@@ -1192,7 +986,7 @@ function openInSuperset(btn) {
 
 function addErrorMsg(msg) {
   const d=document.createElement('div'); d.className='msg assistant';
-  d.innerHTML=`<div class="msg-inner"><div class="msg-avatar"><div class="av-ring" style="background:#ef4444;"><div class="av-inner">!</div></div></div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
+  d.innerHTML=`<div class="msg-inner"><div class="ginny-avatar-wrapper" style="width:36px; height:36px;"><div class="ginny-avatar-glow" style="background:#ef4444;"></div><img src="ginny_logo.png" class="ginny-avatar-img"></div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
   document.getElementById('chat-container').appendChild(d);
   scrollBottom();
 }
