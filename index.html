@@ -27,18 +27,6 @@
     --radius-lg: 24px;
   }
 
-  body.light-mode {
-    --bg-main: #f8fafc;
-    --bg-sidebar: rgba(255, 255, 255, 0.7);
-    --bg-surface: rgba(240, 240, 245, 0.6);
-    --bg-surface-hover: rgba(225, 225, 235, 0.8);
-    --border: rgba(0, 0, 0, 0.08);
-    --accent: #2563eb;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --sql-bg: rgba(240, 240, 240, 0.8);
-  }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     background: var(--bg-main);
@@ -47,11 +35,10 @@
     height: 100vh;
     display: flex;
     overflow: hidden;
-    transition: background 0.3s, color 0.3s;
     position: relative;
   }
 
-  /* ══ ENHANCED AMBIENT GLOW — MORE COLOURS, RICHER EFFECTS ══ */
+  /* ══ ENHANCED AMBIENT GLOW ══ */
   .ambient-glow {
     position: fixed;
     border-radius: 50%;
@@ -60,14 +47,8 @@
     z-index: 0;
     pointer-events: none;
   }
-  body.light-mode .ambient-glow { opacity: 0.12; filter: blur(80px); }
 
-  /* Each glow has its own color animation */
-  .glow-1 {
-    width: 550px; height: 550px;
-    top: -120px; left: -120px;
-    animation: glow1 18s infinite alternate ease-in-out;
-  }
+  .glow-1 { width: 550px; height: 550px; top: -120px; left: -120px; animation: glow1 18s infinite alternate ease-in-out; }
   @keyframes glow1 {
     0%   { background: #1d4ed8; transform: scale(1) translate(0,0); }
     25%  { background: #06b6d4; transform: scale(1.1) translate(60px,30px); }
@@ -76,11 +57,7 @@
     100% { background: #1d4ed8; transform: scale(1) translate(0,0); }
   }
 
-  .glow-2 {
-    width: 480px; height: 480px;
-    bottom: -130px; right: -80px;
-    animation: glow2 22s infinite alternate ease-in-out;
-  }
+  .glow-2 { width: 480px; height: 480px; bottom: -130px; right: -80px; animation: glow2 22s infinite alternate ease-in-out; }
   @keyframes glow2 {
     0%   { background: #7c3aed; transform: scale(1) translate(0,0); }
     25%  { background: #ec4899; transform: scale(1.15) translate(-50px,-30px); }
@@ -89,11 +66,7 @@
     100% { background: #7c3aed; transform: scale(1) translate(0,0); }
   }
 
-  .glow-3 {
-    width: 400px; height: 400px;
-    top: 35%; left: 35%;
-    animation: glow3 16s infinite alternate ease-in-out;
-  }
+  .glow-3 { width: 400px; height: 400px; top: 35%; left: 35%; animation: glow3 16s infinite alternate ease-in-out; }
   @keyframes glow3 {
     0%   { background: #0f766e; transform: scale(1) translate(0,0); }
     33%  { background: #4f46e5; transform: scale(1.2) translate(40px,-60px); }
@@ -101,43 +74,36 @@
     100% { background: #0f766e; transform: scale(1) translate(0,0); }
   }
 
-  /* NEW — extra subtle glows for richness */
-  .glow-4 {
-    width: 300px; height: 300px;
-    top: 10%; right: 20%;
-    animation: glow4 25s infinite alternate ease-in-out;
-  }
+  .glow-4 { width: 300px; height: 300px; top: 10%; right: 20%; animation: glow4 25s infinite alternate ease-in-out; }
   @keyframes glow4 {
     0%   { background: #f43f5e; opacity: 0.15; transform: scale(1); }
     50%  { background: #fb923c; opacity: 0.2; transform: scale(1.3) translate(-30px,30px); }
     100% { background: #a855f7; opacity: 0.15; transform: scale(0.9); }
   }
 
-  .glow-5 {
-    width: 250px; height: 250px;
-    bottom: 20%; left: 20%;
-    animation: glow5 20s infinite alternate ease-in-out;
-  }
+  .glow-5 { width: 250px; height: 250px; bottom: 20%; left: 20%; animation: glow5 20s infinite alternate ease-in-out; }
   @keyframes glow5 {
     0%   { background: #22d3ee; opacity: 0.18; transform: scale(1); }
     50%  { background: #34d399; opacity: 0.22; transform: scale(1.2) translate(20px,-20px); }
     100% { background: #818cf8; opacity: 0.18; transform: scale(0.85); }
   }
 
-  /* ══ NEW: MAGICAL GINNY AVATAR GLOW ══ */
+  /* ══ MAGICAL GINNY GLOW ══ */
   .ginny-avatar-wrapper {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
   }
   .ginny-avatar-glow {
     position: absolute;
-    inset: -4px;
+    inset: -6px;
     border-radius: 50%;
     background: conic-gradient(from 180deg at 50% 50%, #00f2fe 0deg, #8b5cf6 120deg, #06b6d4 240deg, #00f2fe 360deg);
-    filter: blur(8px);
+    filter: blur(14px);
     z-index: 0;
-    opacity: 0.8;
+    opacity: 0.85;
     animation: magicSpin 3s linear infinite;
   }
   @keyframes magicSpin {
@@ -152,21 +118,15 @@
     height: 100%;
     object-fit: cover;
     background: #000;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    display: block;
   }
 
   /* ══ LOGIN ══ */
   #login-screen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); pointer-events: auto; }
-  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; }
+  .login-card { width: 400px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-lg); text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(20px); z-index: 10000; }
 
-  /* Premium bot avatar on login */
-  .login-logo {
-    width: 80px; height: 80px;
-    margin: 0 auto 18px;
-    position: relative;
-  }
-  
-  .login-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; color: var(--text-primary); }
+  .login-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; color: var(--text-primary); margin-top: 10px;}
   .login-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
   .form-group { margin-bottom: 16px; text-align: left; position: relative; z-index: 10; }
   .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
@@ -185,54 +145,16 @@
   #app.visible { display: flex; }
 
   /* ══ SIDEBAR ══ */
-  .sidebar { width: 260px; background: var(--bg-sidebar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.3s; flex-shrink: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);}
-  .sidebar-header { padding: 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar { width: 280px; background: var(--bg-sidebar); backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.3s; flex-shrink: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);}
   .sidebar-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-  /* Superset Link Card */
-  .superset-card {
-    background: linear-gradient(135deg, rgba(0,186,242,0.12), rgba(0,41,112,0.2));
-    border: 1px solid rgba(0,186,242,0.25);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-decoration: none;
-    display: block;
-  }
-  .superset-card:hover {
-    background: linear-gradient(135deg, rgba(0,186,242,0.22), rgba(0,41,112,0.35));
-    border-color: rgba(0,186,242,0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,186,242,0.2);
-  }
-  .superset-card-top {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 8px;
-  }
-  .superset-icon {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: linear-gradient(135deg, #00baf2, #002970);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(0,186,242,0.3);
-  }
+  .superset-card { background: linear-gradient(135deg, rgba(0,186,242,0.12), rgba(0,41,112,0.2)); border: 1px solid rgba(0,186,242,0.25); border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.25s; text-decoration: none; display: block; }
+  .superset-card:hover { background: linear-gradient(135deg, rgba(0,186,242,0.22), rgba(0,41,112,0.35)); border-color: rgba(0,186,242,0.5); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,186,242,0.2); }
+  .superset-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .superset-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
   .superset-sub { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
-  .superset-url {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: rgba(0,186,242,0.8);
-    background: rgba(0,186,242,0.08);
-    border: 1px solid rgba(0,186,242,0.15);
-    border-radius: 5px; padding: 4px 8px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .superset-arrow {
-    margin-left: auto; font-size: 14px;
-    color: rgba(0,186,242,0.7);
-    transition: transform 0.2s;
-  }
+  .superset-url { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(0,186,242,0.8); background: rgba(0,186,242,0.08); border: 1px solid rgba(0,186,242,0.15); border-radius: 5px; padding: 4px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+  .superset-arrow { margin-left: auto; font-size: 14px; color: rgba(0,186,242,0.7); transition: transform 0.2s; }
   .superset-card:hover .superset-arrow { transform: translateX(3px) translateY(-3px); }
 
   .quick-tools { display: flex; flex-direction: column; gap: 8px; }
@@ -248,15 +170,13 @@
   /* ══ MAIN CHAT AREA ══ */
   .main-area { flex: 1; display: flex; flex-direction: column; position: relative; background: transparent; min-width: 0;}
 
-  .context-header { padding: 12px 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 10;}
-  body.light-mode .context-header { background: rgba(255, 255, 255, 0.5); }
+  .context-header { padding: 12px 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 10;}
  
   .ctx-group { display: flex; align-items: center; gap: 8px; background: var(--bg-surface); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); transition: 0.2s;}
   .ctx-group:focus-within { border-color: var(--accent); background: rgba(0,0,0,0.6); }
   .ctx-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
   .ctx-input { background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 150px; }
   .ctx-date { background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; color-scheme: dark;}
-  body.light-mode .ctx-date { color-scheme: light; }
  
   .toggle-pill { display: flex; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
   .toggle-pill input { display: none; }
@@ -282,40 +202,46 @@
   /* Messages */
   .msg { padding: 24px 24px; display: flex; justify-content: center; border-bottom: 1px solid transparent; animation: fadeIn 0.3s ease-out;}
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .msg-inner { max-width: 800px; width: 100%; display: flex; gap: 20px; }
+  .msg-inner { max-width: 850px; width: 100%; display: flex; gap: 20px; }
  
   .msg.user .msg-inner { flex-direction: row-reverse; }
   .msg.user .msg-content { background: var(--bg-surface); backdrop-filter: blur(10px); padding: 14px 18px; border-radius: var(--radius-md); border-bottom-right-radius: 4px; font-size: 15px; line-height: 1.6; max-width: 80%; border: 1px solid var(--border); box-shadow: var(--shadow-sm);}
   .msg.assistant { background: transparent; }
 
-  /* Removed old avatar styles because we are using images now */
   .msg.assistant .msg-content { flex: 1; font-size: 15px; line-height: 1.7; color: var(--text-primary); }
  
   .explain-block { margin-bottom: 16px; color: var(--text-secondary); }
   .explain-block strong { color: var(--text-primary); }
  
   .sql-wrapper { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-top: 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); box-shadow: var(--shadow-md);}
-  .sql-header { display: flex; justify-content: space-between; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
-  body.light-mode .sql-header { background: rgba(0,0,0,0.03); }
+  .sql-header { display: flex; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
   .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase;}
  
-  .toggle-sql-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-left: 12px; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
-  .toggle-sql-btn:hover { background: rgba(56,189,248,0.1); }
- 
-  .sql-actions { display: flex; gap: 8px; }
-  .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 4px 10px; border-radius: 4px;}
+  /* ══ NEW SQL ACTION BAR ALIGNMENT ══ */
+  .sql-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 6px 12px; border-radius: 4px;}
   .btn-code:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
   .btn-code.highlight { color: var(--success); border-color: var(--success); }
+  
+  .primary-action { background: linear-gradient(135deg, #3b82f6, #0ea5e9); color: #fff; border: none; box-shadow: 0 2px 8px rgba(59,130,246,0.3); font-weight: 500;}
+  .primary-action:hover { background: linear-gradient(135deg, #2563eb, #0284c7); color: #fff; transform: translateY(-1px); }
+
   .sql-code { padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #e2e8f0; overflow-x: auto; white-space: pre; line-height: 1.6;}
   .kw { color: #c678dd; font-weight: 600;}
   .str { color: #98c379; }
   .num { color: #d19a66; }
   .cmt { color: #5c6370; font-style: italic; }
 
+  /* Recon Table */
+  .recon-table-wrap { overflow-x: auto; margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.4); }
+  .recon-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: right; }
+  .recon-table th { padding: 12px; background: rgba(255,255,255,0.05); color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; text-transform: uppercase; font-size: 10px; text-align: left;}
+  .recon-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-primary); white-space: nowrap; }
+  .recon-table tr:hover { background: rgba(255,255,255,0.05); }
+
   /* ══ FLOATING INPUT BAR ══ */
   .input-area-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; background: linear-gradient(to top, var(--bg-main) 60%, transparent); display: flex; justify-content: center; z-index: 20;}
-  .input-box-wrapper { width: 100%; max-width: 800px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; box-shadow: var(--shadow-lg); transition: all 0.3s; }
-  body.light-mode .input-box-wrapper { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0,0,0,0.1); }
+  .input-box-wrapper { width: 100%; max-width: 800px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; box-shadow: var(--shadow-lg); transition: all 0.3s; }
   .input-box-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 10px 40px -3px rgba(59,130,246,0.2); }
   #query-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; resize: none; max-height: 150px; min-height: 24px; line-height: 1.5; padding: 8px 0; }
   #query-input::placeholder { color: var(--text-secondary); }
@@ -331,13 +257,12 @@
   @keyframes bounce { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
 
   .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: #fff; color: #000; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 600; opacity: 0; transition: 0.3s; z-index: 9999; pointer-events: none; box-shadow: var(--shadow-lg); }
-  body.light-mode .toast { background: #000; color: #fff; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
 </style>
 </head>
-<body class="dark-mode">
+<body>
 
 <div class="ambient-glow glow-1"></div>
 <div class="ambient-glow glow-2"></div>
@@ -347,10 +272,10 @@
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="ginny-avatar-wrapper" style="width: 80px; height: 80px;">
+    <div style="margin-bottom: 20px;">
+      <div class="ginny-avatar-wrapper" style="width: 85px; height: 85px;">
         <div class="ginny-avatar-glow"></div>
-        <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
+        <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
       </div>
     </div>
     <div class="login-title">SQL Ginny</div>
@@ -374,17 +299,22 @@
 <div id="app">
  
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-      SQL Ginny
+    <div style="text-align: center; padding: 40px 20px 25px; border-bottom: 1px solid var(--border);">
+      <div class="ginny-avatar-wrapper" style="width: 90px; height: 90px; margin-bottom: 16px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
+      </div>
+      <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px;">SQL Ginny</h2>
     </div>
 
     <div class="sidebar-content">
-
+      <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: -4px;">Cards</div>
       <a class="superset-card" href="https://ppsl-query.paytmpayments.com/sqllab/" target="_blank" rel="noopener noreferrer">
         <div class="superset-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div class="superset-icon"></div>
+            <div style="width:32px; height:32px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3"><circle cx="7" cy="12" r="4"></circle><circle cx="17" cy="12" r="4"></circle></svg>
+            </div>
             <div>
               <div class="superset-label">Open Superset</div>
               <div class="superset-sub">Paytm Query Environment</div>
@@ -398,17 +328,22 @@
         </div>
       </a>
 
+      <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-top: 8px; margin-bottom: -4px;">Tools</div>
+      <div class="quick-tools">
+        <label class="tool-btn" style="width: 100%; display: flex;" title="Upload CSV for BW Recon">
+          <input type="file" id="bw-csv-upload" accept=".csv" onchange="processBWCSV(this)" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          BW Recon (Upload CSV)
+        </label>
       </div>
+    </div>
 
     <div class="sidebar-footer">
       <div class="user-profile">
-        <div class="avatar" id="user-avatar">U</div>
+        <div class="avatar" id="user-avatar" style="background:#fff; color:#000;">U</div>
         <span id="user-label">User</span>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </button>
         <button class="btn-icon" onclick="doLogout()" title="Sign Out">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         </button>
@@ -437,17 +372,16 @@
       </div>
 
       <button class="btn-run" id="generate-btn" onclick="generateSettlementQuery()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         Execute
       </button>
     </header>
 
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
-        <div style="margin-bottom: 20px;">
-          <div class="ginny-avatar-wrapper" style="width: 100px; height: 100px;">
+        <div style="margin-bottom:30px;">
+          <div class="ginny-avatar-wrapper" style="width: 120px; height: 120px;">
             <div class="ginny-avatar-glow"></div>
-            <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
+            <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
           </div>
         </div>
         <h2>Get the updated SQL query  </h2>
@@ -494,14 +428,8 @@ let msgCount = 0;
 
 const fmt = d => (d instanceof Date ? d : new Date(d+'T00:00:00')).toISOString().split('T')[0];
 const fmtDisplay = ds => new Date(ds+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const fmtMoney = val => '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-// ── THEME ──
-function toggleTheme() {
-  document.body.classList.toggle('light-mode');
-  localStorage.setItem('ginny_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-}
-
-// ── AUTH ──
 function doLogin() {
   const userEl = document.getElementById('login-user');
   const passEl = document.getElementById('login-pass');
@@ -545,7 +473,6 @@ function doLogout() {
 window.addEventListener('load', () => {
   const saved = sessionStorage.getItem('sguser');
   if (saved && USERS[saved]) { currentUser = saved; launchApp(saved); }
-  if (localStorage.getItem('ginny_theme') === 'light') document.body.classList.add('light-mode');
 });
 
 // ── CONTEXT BAR ──
@@ -571,7 +498,6 @@ function onMidInput(el) {
   el.value = el.value.toLowerCase();
 }
 
-// ── SETTLEMENT GENERATE ──
 function generateSettlementQuery() {
   const mid = document.getElementById('mid-input').value.trim().toLowerCase();
   const startDate = document.getElementById('date-from').value;
@@ -581,10 +507,9 @@ function generateSettlementQuery() {
   chatHistory = []; clearChatUI();
   addUserMsg(`Generate Settlement query for MID: ${mid}`);
   const sql = buildSettlementSQL(mid, startDate, endDate);
-  addAssistantMsg(sql, `Get the updated SQL query   for Settlement.`);
+  addAssistantMsg(sql, `The virtual assistant's latest message so generated this:`);
 }
 
-// ── SQL TEMPLATES ──
 function buildTransactionSQL(mid, s, e) {
   return `SELECT CONCAT('#', a.txn_id) AS txn_id_hash,
     a.*
@@ -778,7 +703,6 @@ LEFT JOIN (
 ) k ON k1.mid = k.mid;`;
 }
 
-// ── VIRTUAL ASSISTANT (CHAT) ──
 async function sendMessage() {
   const input = document.getElementById('query-input');
   const text = input.value.trim();
@@ -796,19 +720,10 @@ async function sendMessage() {
 CURRENT DATE: ${todayStr}. Use this if user says "till date", "today", "now", "current date".
 
 Analyze user input + history. Return EXACTLY ONE of these JSON formats:
-
-1. Settlement request with MID + dates:
-{"intent":"settlement","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-
-2. Transaction request with MID + dates:
-{"intent":"transaction","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-
-3. MID + dates but type not specified:
-{"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-
-4. General custom SQL:
-{"intent":"custom","sql":"...","explanation":"..."}
-
+1. Settlement request with MID + dates: {"intent":"settlement","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+2. Transaction request with MID + dates: {"intent":"transaction","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+3. MID + dates but type not specified: {"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+4. General custom SQL: {"intent":"custom","sql":"...","explanation":"..."}
 ALWAYS lowercase the mid. Return ONLY valid JSON.`;
 
   const messages = [{ role:'system', content:sys }, ...chatHistory.slice(0,-1), { role:'user', content:text }];
@@ -837,7 +752,7 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           document.getElementById('date-to').value = p.end_date;
           document.getElementById('custom-date').checked = true;
           const sql = p.intent==='settlement' ? buildSettlementSQL(cleanMid,p.start_date,p.end_date) : buildTransactionSQL(cleanMid,p.start_date,p.end_date);
-          addAssistantMsg(sql, `Get the updated SQL query  .`);
+          addAssistantMsg(sql, `The virtual assistant's latest message so generated this:`);
           chatHistory.push({role:'assistant',content:raw});
         } else if (p.intent==='clarify' && p.mid && p.start_date && p.end_date) {
           const cleanMid = p.mid.trim().toLowerCase();
@@ -849,11 +764,11 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
           addTextOnlyMsg(msg);
           chatHistory.push({role:'assistant',content:msg});
         } else {
-          addAssistantMsg(p.sql||raw, p.explanation||'Get the updated SQL query  .');
+          addAssistantMsg(p.sql||raw, p.explanation||'The virtual assistant\'s latest message so generated this:');
           chatHistory.push({role:'assistant',content:raw});
         }
       } catch {
-        addAssistantMsg(raw, 'Get the updated SQL query  .');
+        addAssistantMsg(raw, 'The virtual assistant\'s latest message so generated this:');
         chatHistory.push({role:'assistant',content:raw});
       }
     }
@@ -865,7 +780,171 @@ ALWAYS lowercase the mid. Return ONLY valid JSON.`;
   document.getElementById('query-input').focus();
 }
 
-// ── UI HELPERS ──
+function processBWCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const welcome = document.getElementById('welcome'); if (welcome) welcome.remove();
+  addUserMsg(`📊 Uploaded BW Recon File: ${file.name}`);
+  addThinking();
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      const rows = text.split('\n');
+      if (rows.length < 2) throw new Error("File is empty or invalid.");
+
+      const headers = rows[0].split(',').map(h => h.replace(/['"]/g, '').trim());
+      const idxDate = headers.findIndex(h => h === 'Updated_Date');
+      const idxType = headers.findIndex(h => h === 'Transaction_Type');
+      const idxStatus = headers.findIndex(h => h === 'Status');
+      const idxAmount = headers.findIndex(h => h === 'Amount');
+      const idxComm = headers.findIndex(h => h === 'Commission');
+      const idxGST = headers.findIndex(h => h === 'GST');
+      const idxUTR = headers.findIndex(h => h === 'UTR_No.');
+
+      if (idxDate === -1 || idxType === -1 || idxAmount === -1) throw new Error("Missing required columns in CSV.");
+
+      let reconData = {};
+      let pendingM2BTotal = 0;
+      let pendingM2BCount = 0;
+
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+
+        let cols = [];
+        let inQuote = false;
+        let currentVal = '';
+        for(let char of rows[i]) {
+            if(char === '"' || char === "'") inQuote = !inQuote;
+            else if(char === ',' && !inQuote) { cols.push(currentVal); currentVal = ''; }
+            else currentVal += char;
+        }
+        cols.push(currentVal);
+
+        const getVal = (idx) => cols[idx] ? cols[idx].replace(/['"]/g, '').trim() : '';
+
+        const status = getVal(idxStatus).toUpperCase();
+        const type = getVal(idxType).toUpperCase();
+        const amount = parseFloat(getVal(idxAmount)) || 0;
+        const comm = parseFloat(getVal(idxComm)) || 0;
+        const gst = parseFloat(getVal(idxGST)) || 0;
+
+        if ((type === 'M2B' || type === 'TRANSFER_TO_BANK') && status === 'PENDING') {
+            pendingM2BTotal += amount;
+            pendingM2BCount++;
+            continue;
+        }
+
+        let isBase = (type === 'ACQUIRING' && status === 'SUCCESS');
+        let isCbRev = type === 'CHARGEBACK_REVERSAL';
+        let isRecRev = type === 'RECOVERY_REVERSAL';
+        let isCb = type === 'CHARGEBACK';
+        let isDispute = type === 'DISPUTE';
+        let isRecDr = type === 'RECOVERY_DEBIT';
+        let isRefund = type === 'REFUND';
+        
+        if (!isBase && !isCbRev && !isRecRev && !isCb && !isDispute && !isRecDr && !isRefund) continue;
+
+        const rawDate = getVal(idxDate);
+        let date = rawDate ? rawDate.split(' ')[0] : 'N/A';
+        let utr = getVal(idxUTR) || 'PENDING/NO UTR';
+
+        const key = `${date}|${utr}`;
+        if (!reconData[key]) reconData[key] = { 
+            date, utr, base: 0, refund: 0, cb: 0, dispute: 0, rec_dr: 0, cb_rev: 0, rec_rev: 0, fees: 0 
+        };
+
+        if (isBase) { reconData[key].base += amount; reconData[key].fees += (comm + gst); }
+        else if (isRefund) { reconData[key].refund += amount; }
+        else if (isCb) { reconData[key].cb += amount; }
+        else if (isDispute) { reconData[key].dispute += amount; }
+        else if (isRecDr) { reconData[key].rec_dr += amount; }
+        else if (isCbRev) { reconData[key].cb_rev += amount; }
+        else if (isRecRev) { reconData[key].rec_rev += amount; }
+        
+        if (!isBase) reconData[key].fees += (comm + gst); 
+      }
+
+      let alertHtml = '';
+      if (pendingM2BCount > 0) {
+          alertHtml = `
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
+              <span style="font-size: 24px;">⏳</span>
+              <div>
+                <div style="color: var(--danger); font-weight: 700; font-size: 14px; margin-bottom:4px;">Pending Bank Transfer Detected</div>
+                <div style="color: var(--text-primary); font-size: 13px;">${pendingM2BCount} M2B transaction(s) pending. Total Amount: <b style="font-family:monospace; font-size:14px;">${fmtMoney(pendingM2BTotal)}</b></div>
+              </div>
+            </div>
+          `;
+      }
+
+      let htmlTable = alertHtml + `
+        <div class="recon-table-wrap" style="overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-sm); margin-top:16px;">
+        <table class="recon-table" style="width:100%; border-collapse:collapse; font-size:12px; text-align:right;">
+          <thead style="background:rgba(255,255,255,0.05); font-size:10px; text-transform:uppercase; color:var(--text-secondary);">
+            <tr>
+              <th style="padding:10px; text-align:left; border-bottom:1px solid var(--border);">Date</th>
+              <th style="padding:10px; text-align:left; border-bottom:1px solid var(--border);">UTR No.</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border);" title="ACQUIRING (Success)">Acquiring</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--success);" title="CHARGEBACK_REVERSAL">+ CB Rev</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--success);" title="RECOVERY_REVERSAL">+ Rec Rev</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="REFUND">- Refund</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="CHARGEBACK">- CB</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="DISPUTE">- Dispute</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="RECOVERY_DEBIT">- Rec Dr</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--danger);" title="Commission + GST">- Comm&GST</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); color:var(--accent);">Net Settled</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      let hasData = false;
+      const sortedKeys = Object.keys(reconData).sort();
+
+      for (let key of sortedKeys) {
+        const d = reconData[key];
+        const adds = d.cb_rev + d.rec_rev;
+        const deds = d.refund + d.cb + d.dispute + d.rec_dr;
+        const net = d.base + adds - deds - d.fees;
+        
+        if (d.base > 0 || adds > 0 || deds > 0) {
+          hasData = true;
+          const fDate = d.date !== 'N/A' ? new Date(d.date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+          
+          htmlTable += `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px; text-align:left; white-space:nowrap;">${fDate}</td>
+              <td style="padding:10px; text-align:left; font-family:monospace; color:var(--accent); white-space:nowrap;">${d.utr}</td>
+              <td style="padding:10px;">${fmtMoney(d.base)}</td>
+              <td style="padding:10px; color:${d.cb_rev > 0 ? 'var(--success)' : 'inherit'};">${fmtMoney(d.cb_rev)}</td>
+              <td style="padding:10px; color:${d.rec_rev > 0 ? 'var(--success)' : 'inherit'};">${fmtMoney(d.rec_rev)}</td>
+              <td style="padding:10px; color:${d.refund > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.refund)}</td>
+              <td style="padding:10px; color:${d.cb > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.cb)}</td>
+              <td style="padding:10px; color:${d.dispute > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.dispute)}</td>
+              <td style="padding:10px; color:${d.rec_dr > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.rec_dr)}</td>
+              <td style="padding:10px; color:${d.fees > 0 ? 'var(--danger)' : 'inherit'};">${fmtMoney(d.fees)}</td>
+              <td style="padding:10px; font-weight:700; color:var(--text-primary);">${fmtMoney(net)}</td>
+            </tr>
+          `;
+        }
+      }
+      htmlTable += `</tbody></table></div>`;
+
+      removeThinking();
+      if (!hasData) addErrorMsg("No valid BW settlement data found in the file.");
+      else addCustomHtmlMsg(htmlTable, `✅ **BW Reconciliation Complete!** Detailed component breakdown generated.`);
+    } catch(err) {
+      removeThinking();
+      addErrorMsg("Failed to parse CSV: " + err.message);
+    }
+    input.value = ''; 
+  };
+  reader.readAsText(file);
+}
+
 function clearChatUI() { document.getElementById('chat-container').innerHTML = ''; }
 
 function clearChat() {
@@ -876,13 +955,18 @@ function clearChat() {
   document.getElementById('date-from').value=fmt(lastYear);
   document.getElementById('date-to').value=fmt(today);
   document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome">
-    <div style="margin-bottom:20px;">
-      <div class="ginny-avatar-wrapper" style="width: 100px; height: 100px;">
+    <div style="margin-bottom:30px;">
+      <div class="ginny-avatar-wrapper" style="width: 120px; height: 120px;">
         <div class="ginny-avatar-glow"></div>
-        <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img">
+        <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
-    <h2>Get the updated SQL query  </h2><p>Share MID and duration</p><div class="suggestion-chips"><div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div><div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div></div></div>`;
+    <h2>Get the updated SQL query</h2><p>Share MID and duration</p>
+    <div class="suggestion-chips">
+      <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div>
+      <div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div>
+    </div>
+  </div>`;
 }
 
 function addUserMsg(t) {
@@ -896,9 +980,11 @@ function addUserMsg(t) {
 function addThinking() {
   const d=document.createElement('div'); d.className='msg assistant'; d.id='thinking-msg';
   d.innerHTML=`<div class="msg-inner">
-    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-      <div class="ginny-avatar-glow"></div>
-      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
+      </div>
     </div>
     <div class="msg-content"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
   </div>`;
@@ -912,11 +998,32 @@ function addTextOnlyMsg(text) {
   const div=document.createElement('div'); div.className='msg assistant';
   let fText=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>').replace(/\n/g,'<br>');
   div.innerHTML=`<div class="msg-inner">
-    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-      <div class="ginny-avatar-glow"></div>
-      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
+      </div>
     </div>
     <div class="msg-content">${fText}</div>
+  </div>`;
+  document.getElementById('chat-container').appendChild(div);
+  scrollBottom();
+}
+
+function addCustomHtmlMsg(htmlContent, explanation) {
+  const div = document.createElement('div'); div.className = 'msg assistant';
+  let fExp = explanation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  div.innerHTML = `<div class="msg-inner">
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
+      </div>
+    </div>
+    <div class="msg-content">
+      <div style="margin-bottom:8px; color:var(--text-secondary);">${fExp}</div>
+      ${htmlContent}
+    </div>
   </div>`;
   document.getElementById('chat-container').appendChild(div);
   scrollBottom();
@@ -925,55 +1032,47 @@ function addTextOnlyMsg(text) {
 function addAssistantMsg(sqlCode, explanation) {
   const div=document.createElement('div'); div.className='msg assistant';
   const safeSql=encodeURIComponent(sqlCode);
-  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'Get the updated SQL query  .';
+  let fExp=explanation ? escHtml(explanation).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<span style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--text-primary);border:1px solid var(--border);">$1</span>') : 'The virtual assistant\'s latest message so generated this:';
+  
   div.innerHTML=`<div class="msg-inner">
-    <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-      <div class="ginny-avatar-glow"></div>
-      <img src="ginny_logo.png" class="ginny-avatar-img" alt="Ginny">
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+        <div class="ginny-avatar-glow"></div>
+        <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
+      </div>
     </div>
     <div class="msg-content">
       <div class="explain-block">${fExp}</div>
       <div class="sql-wrapper">
         <div class="sql-header">
           <span class="sql-lang">SQL</span>
-          <button class="toggle-sql-btn" onclick="toggleSql(this)"> Show Query</button>
-          
-          <div class="sql-actions">
-            
-            <button class="btn-code" onclick="clearChat()" style="color:#ffffff; background:linear-gradient(135deg, #0ea5e9, #3b82f6); border:none; box-shadow:0 2px 10px rgba(59,130,246,0.3);">
-              ✨ New Session
-            </button>
-            
-            <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Copy
-            </button>
-            
-            <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00baf2;border-color:rgba(0,186,242,0.3);">
-               Open in Superset
-            </button>
+          <div class="sql-actions" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+            <button class="btn-code toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
+            <button class="btn-code primary-action" onclick="clearChat()">✨ New Session</button>
+            <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">📋 Copy</button>
+            <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00f2fe;border-color:rgba(0,242,254,0.3);">↗ Open in Superset</button>
           </div>
-
         </div>
         <div class="sql-code" style="display:none;">${highlightSQL(sqlCode)}</div>
       </div>
     </div>
   </div>`;
+  
   document.getElementById('chat-container').appendChild(div);
   scrollBottom();
 }
 
 function toggleSql(btn) {
-  const codeBlock=btn.parentElement.nextElementSibling;
-  if(codeBlock.style.display==='none'){codeBlock.style.display='block';btn.innerHTML=' Hide Query';}
-  else{codeBlock.style.display='none';btn.innerHTML=' Show Query';}
+  const codeBlock=btn.parentElement.parentElement.nextElementSibling;
+  if(codeBlock.style.display==='none'){codeBlock.style.display='block';btn.innerHTML='🙈 Hide Query';}
+  else{codeBlock.style.display='none';btn.innerHTML='👁️ Show Query';}
 }
 
 function copyFullSQL(btn) {
   navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-sql'))).then(()=>{
     btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
     btn.classList.add('highlight');
-    setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';btn.classList.remove('highlight');},2000);
+    setTimeout(()=>{btn.innerHTML='📋 Copy';btn.classList.remove('highlight');},2000);
   });
 }
 
@@ -986,7 +1085,15 @@ function openInSuperset(btn) {
 
 function addErrorMsg(msg) {
   const d=document.createElement('div'); d.className='msg assistant';
-  d.innerHTML=`<div class="msg-inner"><div class="ginny-avatar-wrapper" style="width:36px; height:36px;"><div class="ginny-avatar-glow" style="background:#ef4444;"></div><img src="ginny_logo.png" class="ginny-avatar-img"></div><div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div></div>`;
+  d.innerHTML=`<div class="msg-inner">
+    <div class="msg-avatar" style="background:transparent; box-shadow:none;">
+      <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
+        <div class="ginny-avatar-glow" style="background:var(--danger);"></div>
+        <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%ef4444\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
+      </div>
+    </div>
+    <div class="msg-content"><div style="color:var(--danger)">${escHtml(msg)}</div></div>
+  </div>`;
   document.getElementById('chat-container').appendChild(d);
   scrollBottom();
 }
@@ -999,7 +1106,7 @@ function highlightSQL(sql) {
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function scrollBottom(){ const c=document.getElementById('chat-container'); c.scrollTop=c.scrollHeight; }
+function scrollBottom(){ /* Auto-scroll disabled */ }
 function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
