@@ -8,7 +8,7 @@
 <style>
   :root {
     --bg-main: #000000;          
-    --bg-sidebar: rgba(10, 10, 15, 0.6);
+    --bg-sidebar: rgba(12, 12, 16, 0.6);
     --bg-surface: rgba(25, 25, 35, 0.4);
     --bg-surface-hover: rgba(40, 40, 55, 0.6);
     --border: rgba(255, 255, 255, 0.08);
@@ -38,12 +38,12 @@
     position: relative;
   }
 
-  /* ══ ENHANCED AMBIENT GLOW ══ */
+  /* ══ SUBTLE AMBIENT GLOW FOR DEEP DARK VIBE ══ */
   .ambient-glow {
     position: fixed;
     border-radius: 50%;
     filter: blur(100px);
-    opacity: 0.35;
+    opacity: 0.15; /* Reduced opacity for pitch black elegance */
     z-index: 0;
     pointer-events: none;
   }
@@ -51,44 +51,18 @@
   .glow-1 { width: 550px; height: 550px; top: -120px; left: -120px; animation: glow1 18s infinite alternate ease-in-out; }
   @keyframes glow1 {
     0%   { background: #1d4ed8; transform: scale(1) translate(0,0); }
-    25%  { background: #06b6d4; transform: scale(1.1) translate(60px,30px); }
     50%  { background: #8b5cf6; transform: scale(0.95) translate(20px,-40px); }
-    75%  { background: #0ea5e9; transform: scale(1.05) translate(-30px,20px); }
-    100% { background: #1d4ed8; transform: scale(1) translate(0,0); }
+    100% { background: #0ea5e9; transform: scale(1.05) translate(-30px,20px); }
   }
 
   .glow-2 { width: 480px; height: 480px; bottom: -130px; right: -80px; animation: glow2 22s infinite alternate ease-in-out; }
   @keyframes glow2 {
     0%   { background: #7c3aed; transform: scale(1) translate(0,0); }
-    25%  { background: #ec4899; transform: scale(1.15) translate(-50px,-30px); }
     50%  { background: #f59e0b; transform: scale(0.9) translate(-20px,40px); }
-    75%  { background: #14b8a6; transform: scale(1.08) translate(30px,-20px); }
-    100% { background: #7c3aed; transform: scale(1) translate(0,0); }
+    100% { background: #ec4899; transform: scale(1.08) translate(30px,-20px); }
   }
 
-  .glow-3 { width: 400px; height: 400px; top: 35%; left: 35%; animation: glow3 16s infinite alternate ease-in-out; }
-  @keyframes glow3 {
-    0%   { background: #0f766e; transform: scale(1) translate(0,0); }
-    33%  { background: #4f46e5; transform: scale(1.2) translate(40px,-60px); }
-    66%  { background: #0284c7; transform: scale(0.85) translate(-40px,40px); }
-    100% { background: #0f766e; transform: scale(1) translate(0,0); }
-  }
-
-  .glow-4 { width: 300px; height: 300px; top: 10%; right: 20%; animation: glow4 25s infinite alternate ease-in-out; }
-  @keyframes glow4 {
-    0%   { background: #f43f5e; opacity: 0.15; transform: scale(1); }
-    50%  { background: #fb923c; opacity: 0.2; transform: scale(1.3) translate(-30px,30px); }
-    100% { background: #a855f7; opacity: 0.15; transform: scale(0.9); }
-  }
-
-  .glow-5 { width: 250px; height: 250px; bottom: 20%; left: 20%; animation: glow5 20s infinite alternate ease-in-out; }
-  @keyframes glow5 {
-    0%   { background: #22d3ee; opacity: 0.18; transform: scale(1); }
-    50%  { background: #34d399; opacity: 0.22; transform: scale(1.2) translate(20px,-20px); }
-    100% { background: #818cf8; opacity: 0.18; transform: scale(0.85); }
-  }
-
-  /* ══ MAGICAL GINNY GLOW ══ */
+  /* ══ EXACT GINNY NEON RING + GLOW (MATCHING IMAGE) ══ */
   .ginny-avatar-wrapper {
     position: relative;
     display: inline-flex;
@@ -96,15 +70,23 @@
     justify-content: center;
     border-radius: 50%;
   }
-  .ginny-avatar-glow {
+  .ginny-avatar-blur {
     position: absolute;
-    inset: -6px;
+    inset: -8px;
     border-radius: 50%;
-    background: conic-gradient(from 180deg at 50% 50%, #00f2fe 0deg, #8b5cf6 120deg, #06b6d4 240deg, #00f2fe 360deg);
+    background: conic-gradient(from 180deg at 50% 50%, #00f2fe 0deg, #8b5cf6 120deg, #ec4899 240deg, #00f2fe 360deg);
     filter: blur(14px);
     z-index: 0;
-    opacity: 0.85;
-    animation: magicSpin 3s linear infinite;
+    opacity: 0.7;
+    animation: magicSpin 4s linear infinite;
+  }
+  .ginny-avatar-ring {
+    position: absolute;
+    inset: -2px; /* Solid thin ring */
+    border-radius: 50%;
+    background: conic-gradient(from 180deg at 50% 50%, #00f2fe 0deg, #8b5cf6 120deg, #ec4899 240deg, #00f2fe 360deg);
+    z-index: 1;
+    animation: magicSpin 4s linear infinite;
   }
   @keyframes magicSpin {
     0% { transform: rotate(0deg); }
@@ -112,13 +94,13 @@
   }
   .ginny-avatar-img {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     border-radius: 50%;
     width: 100%;
     height: 100%;
     object-fit: cover;
     background: #000;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid #000; /* Clean separation from neon ring */
     display: block;
   }
 
@@ -148,7 +130,17 @@
   .sidebar { width: 280px; background: var(--bg-sidebar); backdrop-filter: blur(20px); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: width 0.3s; flex-shrink: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2);}
   .sidebar-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-  .superset-card { background: linear-gradient(135deg, rgba(0,186,242,0.12), rgba(0,41,112,0.2)); border: 1px solid rgba(0,186,242,0.25); border-radius: var(--radius-md); padding: 16px; cursor: pointer; transition: all 0.25s; text-decoration: none; display: block; }
+  /* Superset Link Card */
+  .superset-card {
+    background: linear-gradient(135deg, rgba(0,186,242,0.12), rgba(0,41,112,0.2));
+    border: 1px solid rgba(0,186,242,0.25);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    display: block;
+  }
   .superset-card:hover { background: linear-gradient(135deg, rgba(0,186,242,0.22), rgba(0,41,112,0.35)); border-color: rgba(0,186,242,0.5); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,186,242,0.2); }
   .superset-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .superset-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
@@ -215,10 +207,13 @@
  
   .sql-wrapper { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-top: 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); box-shadow: var(--shadow-md);}
   .sql-header { display: flex; padding: 10px 16px; background: rgba(255,255,255,0.03); align-items: center; border-bottom: 1px solid var(--border); }
-  .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase;}
+  .sql-lang { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-secondary); text-transform: uppercase;}
+ 
+  .toggle-sql-btn { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; display: flex; align-items: center; margin-right: auto; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;}
+  .toggle-sql-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
  
   /* ══ NEW SQL ACTION BAR ALIGNMENT ══ */
-  .sql-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sql-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
   .btn-code { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; transition: 0.2s; padding: 6px 12px; border-radius: 4px;}
   .btn-code:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
   .btn-code.highlight { color: var(--success); border-color: var(--success); }
@@ -241,7 +236,7 @@
 
   /* ══ FLOATING INPUT BAR ══ */
   .input-area-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; background: linear-gradient(to top, var(--bg-main) 60%, transparent); display: flex; justify-content: center; z-index: 20;}
-  .input-box-wrapper { width: 100%; max-width: 800px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; box-shadow: var(--shadow-lg); transition: all 0.3s; }
+  .input-box-wrapper { width: 100%; max-width: 800px; background: rgba(30, 30, 40, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-lg); padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; box-shadow: var(--shadow-lg); transition: all 0.3s; }
   .input-box-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 10px 40px -3px rgba(59,130,246,0.2); }
   #query-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; resize: none; max-height: 150px; min-height: 24px; line-height: 1.5; padding: 8px 0; }
   #query-input::placeholder { color: var(--text-secondary); }
@@ -274,7 +269,8 @@
   <div class="login-card">
     <div style="margin-bottom: 20px;">
       <div class="ginny-avatar-wrapper" style="width: 85px; height: 85px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
       </div>
     </div>
@@ -301,7 +297,8 @@
   <aside class="sidebar">
     <div style="text-align: center; padding: 40px 20px 25px; border-bottom: 1px solid var(--border);">
       <div class="ginny-avatar-wrapper" style="width: 90px; height: 90px; margin-bottom: 16px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
       </div>
       <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px;">SQL Ginny</h2>
@@ -378,13 +375,14 @@
 
     <div id="chat-container">
       <div class="welcome-msg" id="welcome">
-        <div style="margin-bottom:30px;">
+        <div style="margin-bottom: 30px;">
           <div class="ginny-avatar-wrapper" style="width: 120px; height: 120px;">
-            <div class="ginny-avatar-glow"></div>
-            <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
+            <div class="ginny-avatar-blur"></div>
+            <div class="ginny-avatar-ring"></div>
+            <img src="ginny_logo.png" alt="Ginny" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300f2fe\' stroke-width=\'2\'><path d=\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\'></path></svg>';">
           </div>
         </div>
-        <h2>Get the updated SQL query  </h2>
+        <h2>Get the updated SQL Query Instantly ⚡</h2>
         <p>Share MID and duration</p>
         <div class="suggestion-chips">
           <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date'; document.getElementById('query-input').focus();">
@@ -957,11 +955,12 @@ function clearChat() {
   document.getElementById('chat-container').innerHTML=`<div class="welcome-msg" id="welcome">
     <div style="margin-bottom:30px;">
       <div class="ginny-avatar-wrapper" style="width: 120px; height: 120px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" alt="Ginny Logo" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
-    <h2>Get the updated SQL query</h2><p>Share MID and duration</p>
+    <h2>Get the updated SQL Query Instantly ⚡</h2><p>Share MID and duration</p>
     <div class="suggestion-chips">
       <div class="chip" onclick="document.getElementById('query-input').value='txn for mid qugeem32601181231171 1 april to till date';document.getElementById('query-input').focus();"><span>Transaction Query</span>"txn for mid qugeem... 1 april to till date"</div>
       <div class="chip" onclick="document.getElementById('query-input').value='settlement for mid qugeem32601181231171 last month';document.getElementById('query-input').focus();"><span>Settlement Query</span>"settlement for mid qugeem... last month"</div>
@@ -982,7 +981,8 @@ function addThinking() {
   d.innerHTML=`<div class="msg-inner">
     <div class="msg-avatar" style="background:transparent; box-shadow:none;">
       <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
@@ -1000,7 +1000,8 @@ function addTextOnlyMsg(text) {
   div.innerHTML=`<div class="msg-inner">
     <div class="msg-avatar" style="background:transparent; box-shadow:none;">
       <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
@@ -1016,7 +1017,8 @@ function addCustomHtmlMsg(htmlContent, explanation) {
   div.innerHTML = `<div class="msg-inner">
     <div class="msg-avatar" style="background:transparent; box-shadow:none;">
       <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
@@ -1037,7 +1039,8 @@ function addAssistantMsg(sqlCode, explanation) {
   div.innerHTML=`<div class="msg-inner">
     <div class="msg-avatar" style="background:transparent; box-shadow:none;">
       <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-        <div class="ginny-avatar-glow"></div>
+        <div class="ginny-avatar-blur"></div>
+        <div class="ginny-avatar-ring"></div>
         <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%2300f2fe\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
@@ -1088,7 +1091,7 @@ function addErrorMsg(msg) {
   d.innerHTML=`<div class="msg-inner">
     <div class="msg-avatar" style="background:transparent; box-shadow:none;">
       <div class="ginny-avatar-wrapper" style="width:36px; height:36px;">
-        <div class="ginny-avatar-glow" style="background:var(--danger);"></div>
+        <div class="ginny-avatar-ring" style="background:#ef4444;"></div>
         <img src="ginny_logo.png" class="ginny-avatar-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100\\\' height=\\\'100\\\' viewBox=\\\'0 0 24 24\\\' fill=\\\'none\\\' stroke=\\\'%ef4444\\\' stroke-width=\\\'2\\\'><path d=\\\'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\\\'></path></svg>';">
       </div>
     </div>
