@@ -424,9 +424,9 @@ const fmtMoney = val => {
   const n = Math.abs(val);
   const sign = val < 0 ? '-' : '';
   // If the value is a whole number, show without decimals
-  if(n % 1 === 0) return sign + '₹' + n.toLocaleString('en-IN');
+  if(n % 1 === 0) return sign + n.toLocaleString('en-IN');
   // Otherwise show up to 2 decimal places but strip trailing zeros
-  return sign + '₹' + n.toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
+  return sign + n.toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
 };
 
 function doLogin() {
