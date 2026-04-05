@@ -1,1 +1,1 @@
-# SQL-Gennie
+# SQL-GINNY
