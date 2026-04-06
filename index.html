@@ -785,7 +785,7 @@ function addAssistantMsg(sqlCode,explanation){
           <button class="btn-code toggle-sql-btn" onclick="toggleSql(this)">👁️ Show Query</button>
           <button class="btn-code primary-action" onclick="clearChat()">✨ New Session</button>
           <button class="btn-code" data-sql="${safeSql}" onclick="copyFullSQL(this)">📋 Copy</button>
-          <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00f2fe;border-color:rgba(0,242,254,0.3);">↗ Open in Superset</button>
+          <button class="btn-code" data-sql="${safeSql}" onclick="openInSuperset(this)" style="color:#00f2fe;border-color:rgba(0,242,254,0.3);">↗ Open Superset</button>
         </div>
       </div>
       <div class="sql-code" style="display:none;">${highlightSQL(sqlCode)}</div>
