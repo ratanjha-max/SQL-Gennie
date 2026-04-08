@@ -507,16 +507,44 @@ async function sendMessage() {
       try {
         const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
 if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
-      let cm=p.mid.trim().toLowerCase(); const userText=text.toLowerCase();
-      if(!userText.includes(cm)){ const match=userText.match(/[a-z0-9]{15,35}/); if(match) cm=match[0]; else { addErrorMsg("⚠️ MID mismatch."); return; } }
-      document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-      addAssistantMsg(p.intent==='settlement'?buildSettlementSQL(cm,p.start_date,p.end_date):buildTransactionSQL(cm,p.start_date,p.end_date), `✅ Query generated for MID: **${cm}**`);
-      chatHistory.push({role:'assistant',content:raw});
-        } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
-          const cm=p.mid.trim().toLowerCase();
+          let cm=p.mid.trim().toLowerCase();
+          const userText=text.toLowerCase();
+          
+          if(!userText.includes(cm)){
+            const regexMatch=userText.match(/[a-z0-9]{15,35}/);
+            if(regexMatch) {
+                cm=regexMatch[0]; 
+            } else { 
+                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again."); 
+                document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
+                return; 
+            }
+          }
+
           document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          addTextOnlyMsg(`Got details for \`${cm}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`);
-          chatHistory.push({role:'assistant',content:`Got details for ${cm}. Do you need Settlement or Transaction?`});
+          const sql = p.intent==='settlement' ? buildSettlementSQL(cm,p.start_date,p.end_date) : buildTransactionSQL(cm,p.start_date,p.end_date);
+          addAssistantMsg(sql, `✅ Query generated for MID: **${cm}**`);
+          chatHistory.push({role:'assistant',content:raw});
+          
+        } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
+          let cm=p.mid.trim().toLowerCase();
+          const userText=text.toLowerCase();
+          
+          if(!userText.includes(cm)){
+            const regexMatch=userText.match(/[a-z0-9]{15,35}/); 
+            if(regexMatch) {
+                cm=regexMatch[0]; 
+            } else { 
+                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again."); 
+                document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
+                return; 
+            }
+          }
+          
+          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
+          const msg = `Got details for \`${cm}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
+          addTextOnlyMsg(msg);
+          chatHistory.push({role:'assistant',content:msg});
         } else { addAssistantMsg(p.sql||raw,p.explanation||"The virtual assistant's latest message so generated this:"); chatHistory.push({role:'assistant',content:raw}); }
       } catch { addAssistantMsg(raw,"The virtual assistant's latest message so generated this:"); chatHistory.push({role:'assistant',content:raw}); }
     }
