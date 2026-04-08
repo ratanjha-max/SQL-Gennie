@@ -507,6 +507,7 @@ async function sendMessage() {
       try {
         const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
         if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
+  if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
           const cm=p.mid.trim().toLowerCase();
           document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
           addAssistantMsg(p.intent==='settlement'?buildSettlementSQL(cm,p.start_date,p.end_date):buildTransactionSQL(cm,p.start_date,p.end_date),"The virtual assistant's latest message so generated this:");
