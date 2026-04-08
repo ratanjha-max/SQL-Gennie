@@ -506,12 +506,12 @@ async function sendMessage() {
       const raw=data.choices?.[0]?.message?.content||'';
       try {
         const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
-        if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
-  if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
-          const cm=p.mid.trim().toLowerCase();
-          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          addAssistantMsg(p.intent==='settlement'?buildSettlementSQL(cm,p.start_date,p.end_date):buildTransactionSQL(cm,p.start_date,p.end_date),"The virtual assistant's latest message so generated this:");
-          chatHistory.push({role:'assistant',content:raw});
+if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
+      let cm=p.mid.trim().toLowerCase(); const userText=text.toLowerCase();
+      if(!userText.includes(cm)){ const match=userText.match(/[a-z0-9]{15,35}/); if(match) cm=match[0]; else { addErrorMsg("⚠️ MID mismatch."); return; } }
+      document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
+      addAssistantMsg(p.intent==='settlement'?buildSettlementSQL(cm,p.start_date,p.end_date):buildTransactionSQL(cm,p.start_date,p.end_date), `✅ Query generated for MID: **${cm}**`);
+      chatHistory.push({role:'assistant',content:raw});
         } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
           const cm=p.mid.trim().toLowerCase();
           document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
