@@ -489,7 +489,14 @@ async function sendMessage() {
   const welcome=document.getElementById('welcome'); if(welcome)welcome.remove();
   addUserMsg(text); chatHistory.push({role:'user',content:text}); addThinking();
   const todayStr=fmt(new Date());
-  const sys=`You are SQL Ginny, expert Trino/Hive SQL assistant.\nCURRENT DATE: ${todayStr}. Use this if user says "till date", "today", "now", "current date".\nReturn EXACTLY ONE JSON:\n1. {"intent":"settlement","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}\n2. {"intent":"transaction","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}\n3. {"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}\n4. {"intent":"custom","sql":"...","explanation":"..."}\nALWAYS lowercase mid. Return ONLY valid JSON.`;
+  const sys=`You are SQL Ginny, expert Trino/Hive SQL assistant.
+  CURRENT DATE: ${todayStr}. Use this if user says "till date", "today", "now", "current date".
+  Return EXACTLY ONE JSON:
+  1. {"intent":"settlement","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+  2. {"intent":"transaction","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+  3. {"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
+  4. {"intent":"custom","sql":"...","explanation":"..."}
+  CRITICAL INSTRUCTION: Extract the MID exactly as typed by the user, character-by-character. DO NOT miss, skip, or alter any letters or numbers. Only convert it to lowercase. Return ONLY valid JSON.`;
   const messages=[{role:'system',content:sys},...chatHistory.slice(0,-1),{role:'user',content:text}];
   try {
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages,temperature:0.1,max_tokens:1500})});
