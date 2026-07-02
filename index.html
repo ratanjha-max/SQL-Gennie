@@ -503,7 +503,7 @@ async function sendMessage() {
     const data=await res.json(); removeThinking();
     if(data.error){addErrorMsg('API Error: '+data.error.message);}
     else {
-      const raw=data.choices?.[0]?.message?.content||'';
+      const raw= data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       try {
         const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
 if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
