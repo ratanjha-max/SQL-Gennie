@@ -432,27 +432,60 @@ const fmtMoney = val => {
   function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
+    const errorMsg = document.getElementById('login-error');
+    const passInput = document.getElementById('login-pass');
     
-    // Checking the hint credentials you provided
     if (user === 'ratan.jha' && pass === 'paytm@123') {
-      // Login success: Hide login screen, show app
-      document.getElementById('login-error').classList.remove('show');
+      errorMsg.classList.remove('show');
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').classList.add('visible');
+      
+      // Success Toast (Optional)
+      const toast = document.getElementById('toast');
+      toast.innerText = 'Authentication Successful!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
     } else {
-      // Login failed: Show error and shake password input
-      document.getElementById('login-error').classList.add('show');
-      document.getElementById('login-pass').classList.add('shake');
-      setTimeout(() => document.getElementById('login-pass').classList.remove('shake'), 400);
+      errorMsg.classList.add('show');
+      passInput.classList.add('shake');
+      setTimeout(() => passInput.classList.remove('shake'), 400);
     }
   }
 
   function doLogout() {
-    // Show login screen, hide app
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').classList.remove('visible');
     document.getElementById('login-pass').value = '';
   }
+
+  // 2. TERA DATE MODE FUNCTION
+  function handleDateMode(radio) {
+    const f = document.getElementById('date-from');
+    const t = document.getElementById('date-to');
+    
+    if(radio.value === 'fy'){ 
+      window.savedCustomFrom = f.value; 
+      window.savedCustomTo = t.value; 
+      f.value = '2025-04-01'; // Example start date
+      t.value = '2026-03-31'; // Example end date
+    } else { 
+      if(window.savedCustomFrom) f.value = window.savedCustomFrom; 
+      if(window.savedCustomTo) t.value = window.savedCustomTo;
+    }
+  }
+
+  // 3. TERA WINDOW LOAD EVENT
+  window.addEventListener('load', () => { 
+    try {
+      const s = sessionStorage.getItem('sguser'); 
+      // Agar USERS defined hai toh tera aage ka code yahan chalega
+      if(s && typeof USERS !== 'undefined' && USERS[s]){
+        // tera baaki ka load logic
+      }
+    } catch(e) {
+      console.log("Load error ignored for now", e);
+    }
+  });
 window.addEventListener('load',()=>{ const s=sessionStorage.getItem('sguser'); if(s&&USERS[s]){currentUser=s;launchApp(s);} });
 
 function handleDateMode(radio) {
