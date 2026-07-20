@@ -12,7 +12,7 @@
     --bg-surface: rgba(25, 25, 35, 0.4);
     --bg-surface-hover: rgba(40, 40, 55, 0.6);
     --border: rgba(255, 255, 255, 0.08);
-    --accent: #3b82f6;           
+    --accent: #3b82f6;          
     --accent-hover: #60a5fa;
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
@@ -428,64 +428,37 @@ const fmtMoney = val => {
   // Otherwise show up to 2 decimal places but strip trailing zeros
   return sign + n.toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
 };
-<script>
-  function doLogin() {
-    const user = document.getElementById('login-user').value;
-    const pass = document.getElementById('login-pass').value;
-    const errorMsg = document.getElementById('login-error');
-    const passInput = document.getElementById('login-pass');
-    
-    if (user === 'ratan.jha' && pass === 'paytm@123') {
-      errorMsg.classList.remove('show');
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').classList.add('visible');
-      
-      // Success Toast (Optional)
-      const toast = document.getElementById('toast');
-      toast.innerText = 'Authentication Successful!';
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    } else {
-      errorMsg.classList.add('show');
-      passInput.classList.add('shake');
-      setTimeout(() => passInput.classList.remove('shake'), 400);
-    }
-  }
 
-  function doLogout() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('login-pass').value = '';
+function doLogin() {
+  const userEl=document.getElementById('login-user'), passEl=document.getElementById('login-pass');
+  if(!userEl||!passEl) return;
+  const user=userEl.value.trim().toLowerCase().replace(/@paytm\.com$|@paytmpayments\.com$/,'');
+  const pass=passEl.value;
+  const errEl=document.getElementById('login-error');
+  if(USERS[user]&&USERS[user]===pass){
+    currentUser=user; sessionStorage.setItem('sguser',user); errEl.classList.remove('show'); launchApp(user);
+  } else {
+    errEl.classList.add('show'); passEl.classList.add('shake'); setTimeout(()=>passEl.classList.remove('shake'),500);
   }
+}
 
-  // 2. TERA DATE MODE FUNCTION
-  function handleDateMode(radio) {
-    const f = document.getElementById('date-from');
-    const t = document.getElementById('date-to');
-    
-    if(radio.value === 'fy'){ 
-      window.savedCustomFrom = f.value; 
-      window.savedCustomTo = t.value; 
-      f.value = '2025-04-01'; // Example start date
-      t.value = '2026-03-31'; // Example end date
-    } else { 
-      if(window.savedCustomFrom) f.value = window.savedCustomFrom; 
-      if(window.savedCustomTo) t.value = window.savedCustomTo;
-    }
-  }
+function launchApp(user) {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('user-label').textContent=user;
+  /* user-avatar is now an image, no textContent update needed */
+  const today=new Date(), ly=new Date(today); ly.setFullYear(today.getFullYear()-1);
+  document.getElementById('date-to').value=fmt(today);
+  document.getElementById('date-from').value=fmt(ly);
+}
 
-  // 3. TERA WINDOW LOAD EVENT
-  window.addEventListener('load', () => { 
-    try {
-      const s = sessionStorage.getItem('sguser'); 
-      // Agar USERS defined hai toh tera aage ka code yahan chalega
-      if(s && typeof USERS !== 'undefined' && USERS[s]){
-        // tera baaki ka load logic
-      }
-    } catch(e) {
-      console.log("Load error ignored for now", e);
-    }
-  });
+function doLogout() {
+  sessionStorage.removeItem('sguser'); currentUser=''; chatHistory=[];
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-user').value=''; document.getElementById('login-pass').value='';
+}
+
 window.addEventListener('load',()=>{ const s=sessionStorage.getItem('sguser'); if(s&&USERS[s]){currentUser=s;launchApp(s);} });
 
 function handleDateMode(radio) {
@@ -524,48 +497,28 @@ async function sendMessage() {
   3. {"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
   4. {"intent":"custom","sql":"...","explanation":"..."}
   CRITICAL INSTRUCTION: Extract the MID exactly as typed by the user, character-by-character. DO NOT miss, skip, or alter any letters or numbers. Only convert it to lowercase. Return ONLY valid JSON.`;
-  
-  // Yeh line miss ho gayi thi pehle
-  const messages=[{role:'system',content:sys},...chatHistory.slice(0,-1),{role:'user',content:text}];
-  
+  const historyForApi=chatHistory.slice(0,-1).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+  const contents=[...historyForApi,{role:'user',parts:[{text:text}]}];
   try {
-    // Google Gemini API URL and Key updated here
-    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + GEMINI_API_KEY
-      },
-      body:JSON.stringify({
-        model:'gemini-1.5-flash',
-        messages: messages,
-        temperature:0.1,
-        max_tokens:1500
-      })
-    });
-    
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':GEMINI_API_KEY},body:JSON.stringify({contents,systemInstruction:{parts:[{text:sys}]},generationConfig:{temperature:0.1,maxOutputTokens:1500}})});
     const data=await res.json(); removeThinking();
-    
-    if(data.error){
-      addErrorMsg('API Error: '+data.error.message);
-    } else {
-      // Google API format choices read karega
-      const raw = data?.choices?.[0]?.message?.content || ''; 
-      
+    if(data.error){addErrorMsg('API Error: '+data.error.message);}
+    else {
+      const raw= data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       try {
         const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
-        if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
+if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
           let cm=p.mid.trim().toLowerCase();
           const userText=text.toLowerCase();
-          
+         
           if(!userText.includes(cm)){
             const regexMatch=userText.match(/[a-z0-9]{15,35}/);
             if(regexMatch) {
-                cm=regexMatch[0]; 
-            } else { 
-                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again."); 
+                cm=regexMatch[0];
+            } else {
+                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again.");
                 document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-                return; 
+                return;
             }
           }
 
@@ -573,61 +526,22 @@ async function sendMessage() {
           const sql = p.intent==='settlement' ? buildSettlementSQL(cm,p.start_date,p.end_date) : buildTransactionSQL(cm,p.start_date,p.end_date);
           addAssistantMsg(sql, `✅ Query generated for MID: **${cm}**`);
           chatHistory.push({role:'assistant',content:raw});
-          
+         
         } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
           let cm=p.mid.trim().toLowerCase();
           const userText=text.toLowerCase();
-          
+         
           if(!userText.includes(cm)){
-            const regexMatch=userText.match(/[a-z0-9]{15,35}/); 
+            const regexMatch=userText.match(/[a-z0-9]{15,35}/);
             if(regexMatch) {
-                cm=regexMatch[0]; 
-            } else { 
-                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again."); 
+                cm=regexMatch[0];
+            } else {
+                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again.");
                 document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-                return; 
+                return;
             }
           }
-          
-          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          const msg = `Got details for \`${cm}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
-          addTextOnlyMsg(msg);
-          chatHistory.push({role:'assistant',content:msg});
-        } else { 
-          addAssistantMsg(p.sql||raw,p.explanation||"The virtual assistant's latest message so generated this:"); 
-          chatHistory.push({role:'assistant',content:raw}); 
-        }
-      } catch { 
-        addAssistantMsg(raw,"The virtual assistant's latest message so generated this:"); 
-        chatHistory.push({role:'assistant',content:raw}); 
-      }
-    }
-  } catch(err){ 
-    removeThinking(); 
-    addErrorMsg('Network error: '+err.message); 
-  }
-  document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-}
-          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          const sql = p.intent==='settlement' ? buildSettlementSQL(cm,p.start_date,p.end_date) : buildTransactionSQL(cm,p.start_date,p.end_date);
-          addAssistantMsg(sql, `✅ Query generated for MID: **${cm}**`);
-          chatHistory.push({role:'assistant',content:raw});
-          
-        } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
-          let cm=p.mid.trim().toLowerCase();
-          const userText=text.toLowerCase();
-          
-          if(!userText.includes(cm)){
-            const regexMatch=userText.match(/[a-z0-9]{15,35}/); 
-            if(regexMatch) {
-                cm=regexMatch[0]; 
-            } else { 
-                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again."); 
-                document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-                return; 
-            }
-          }
-          
+         
           document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
           const msg = `Got details for \`${cm}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
           addTextOnlyMsg(msg);
