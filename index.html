@@ -12,7 +12,7 @@
     --bg-surface: rgba(25, 25, 35, 0.4);
     --bg-surface-hover: rgba(40, 40, 55, 0.6);
     --border: rgba(255, 255, 255, 0.08);
-    --accent: #3b82f6;          
+    --accent: #3b82f6;           
     --accent-hover: #60a5fa;
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
@@ -410,7 +410,6 @@
 </div>
 
 <script>
-const GEMINI_API_KEY = 'AQ.Ab8RN6JMnRklLd6spC-8qoyBPOsDg8neqph_PDhhsiOKkHRMJQ';
 const USERS = { 'ratan.jha':'paytm@123', 'admin':'admin@123' };
 
 let currentUser='', chatHistory=[], msgCount=0;
@@ -482,75 +481,126 @@ function buildTransactionSQL(mid,s,e){return `SELECT CONCAT('#', a.txn_id) AS tx
 
 function buildSettlementSQL(mid,s,e){return `SELECT\n    k1.mid,\n    txn_id,\n    txn_started_at,\n    order_id,\n    payment_type,\n    payment_mode,\n    txn_amount,\n    settlement_date,\n    settled_amount,\n    fund_type,\n    UTR,\n    ESN,\n    card_category AS bank\nFROM (\n    SELECT\n        mid,\n        txn_id,\n        txn_started_at,\n        order_id,\n        payment_type,\n        payment_mode,\n        txn_amount,\n        settlement_date,\n        settled_amount,\n        fund_type,\n        UTR,\n        bank_name,\n        card_category,\n        CONCAT('#', CAST(settlement_esn AS VARCHAR)) AS ESN\n    FROM (\n        SELECT\n            mid,\n            CONCAT('#', txn_id) AS txn_id,\n            txn_started_at,\n            CONCAT('#', order_id) AS order_id,\n            payment_type,\n            payment_mode,\n            txn_amount,\n            settlement_date,\n            settlement_esn,\n            settled_amount,\n            bank_name,\n            card_category,\n            fund_type,\n            CONCAT('#', UTR) AS UTR\n        FROM (\n            SELECT\n                mid,\n                txn_id,\n                txn_started_at,\n                txn_amount,\n                order_id,\n                payment_type,\n                payment_mode,\n                settlement_date,\n                settlement_esn,\n                settled_amount,\n                fund_type,\n                UTR,\n                bank_name,\n                card_category,\n                ROW_NUMBER() OVER (\n                    PARTITION BY txn_id\n                    ORDER BY settlement_date ASC\n                ) AS srno\n            FROM (\n                SELECT\n                    a.mid, a.txn_id, a.txn_started_at, a.txn_amount, order_id,\n                    a.payment_type, a.payment_mode, b.created_date AS settlement_date,\n                    b.esn AS settlement_esn, b.amount AS settled_amount,\n                    bank_name, card_category, fund_type, UTR\n                FROM (\n                    SELECT LOWER(mid) AS mid, txn_id, txn_started_at, txn_amount,\n                        order_id, payment_type, payment_mode, bank_name, card_category\n                    FROM hive_offline.dwh.pg_olap\n                    WHERE responsecode = '01'\n                      AND LOWER(mid) IN ('${mid}')\n                      AND DATE(txn_started_at) BETWEEN DATE '${s}' AND DATE '${e}'\n                      AND ingest_date >= DATE '${s}'\n                ) a\n                JOIN (\n                    SELECT LOWER(paytm_mid) AS original_merchant_id, CAST(a.sts_transfer_id AS VARCHAR) AS esn,\n                        amount, created_time AS created_date, rrn_id AS UTR,\n                        CASE WHEN is_manual_m2b = 1 THEN 'MERCHANT_WITHDRAW' ELSE 'MERCHANT_AUTO_WITHDRAW' END AS fund_type\n                    FROM (\n                        (\n                            SELECT LOWER(paytm_mid) AS paytm_mid, sts_transfer_id, payout_id, amount / 100 AS amount, created_time\n                            FROM hive_offline.stsservicev2.settlement_transfer_snapshot_v3\n                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'\n                              AND LOWER(paytm_mid) IN ('${mid}') AND transaction_status = 'FUND_SUCCESS'\n                        ) a\n                        JOIN ( SELECT DISTINCT payout_id, is_manual_m2b FROM hive_offline.stsservicev2.settlement_request_snapshot_v3 WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}') b ON a.payout_id = b.payout_id\n                        JOIN ( SELECT sts_transfer_id, rrn_id FROM hive_offline.stsservicev2.bank_transfer_response_snapshot_v3 WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}') c ON a.sts_transfer_id = c.sts_transfer_id\n                    )\n                    UNION\n                    SELECT LOWER(original_merchant_id), CAST(settlement_esn AS VARCHAR), amount, created_date, utr, fund_type\n                    FROM (\n                        (\n                            SELECT LOWER(original_merchant_id) AS original_merchant_id, esn AS settlement_esn, amount, created_date, fund_type\n                            FROM hive_offline.oss_paytm_data_lake_prod.adm_business_wallet_v1_snapshot_v3\n                            WHERE LOWER(biz_status) = 's07' AND LOWER(original_merchant_id) IN ('${mid}')\n                              AND dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'\n                        ) x\n                        LEFT JOIN (\n                            SELECT external_serial_no AS esn, reference_no AS utr, JSON_EXTRACT_SCALAR(extension_info, '$.payoutId') AS payoutId\n                            FROM hive_offline.oss_paytm_data_lake_prod.ods_flux_ex_serial_snapshot_v3\n                            WHERE dl_last_updated BETWEEN DATE '${s}' AND DATE '${e}'\n                              AND external_event_code LIKE '%alipayplus.fluxnet.paytm.withdraw.request@1.1.2'\n                        ) y ON CAST(x.settlement_esn AS VARCHAR) = CAST(y.esn AS VARCHAR)\n                    )\n                ) b ON a.mid = b.original_merchant_id\n            ) a\n            WHERE txn_started_at < settlement_date\n        ) a\n        WHERE srno = 1\n    )\n) k1\nLEFT JOIN (\n    SELECT LOWER(mid) AS mid, bank_name\n    FROM hive_offline.pg.entity_info_snapshot_v3 x\n    JOIN hive_offline.pg.merchant_kyc_details_snapshot_v3 y ON x.id = y.entity_id\n    WHERE x.dl_last_updated <= CURRENT_DATE AND y.dl_last_updated <= CURRENT_DATE\n) k ON k1.mid = k.mid;`;}
 
+// ══ Local rule-based parser — replaces the AI API entirely ══
+// Extracts MID, report type (settlement/transaction), and date range from plain typed text.
+function parseUserQuery(text) {
+  const lower = text.toLowerCase();
+  const pad = n => String(n).padStart(2,'0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const addDays = (d,n) => { const r=new Date(d); r.setDate(r.getDate()+n); return r; };
+  const today = new Date();
+
+  // ---- MID: alphanumeric string 15-35 chars long ----
+  let mid = null;
+  const midMatch = lower.match(/[a-z0-9]{15,35}/);
+  if (midMatch) mid = midMatch[0];
+
+  // ---- Report type ----
+  let reportType = null;
+  if (/settlement/.test(lower)) reportType = 'settlement';
+  else if (/\btxn\b|\btransaction(s)?\b|\btrans\b/.test(lower)) reportType = 'transaction';
+
+  // ---- Dates ----
+  let startDate = null, endDate = null, m;
+
+  if ((m = lower.match(/last\s+(\d{1,3})\s*days?/))) {
+    const n = parseInt(m[1], 10);
+    startDate = toISO(addDays(today, -(n - 1)));
+    endDate = toISO(today);
+  } else if (/this month/.test(lower)) {
+    startDate = toISO(new Date(today.getFullYear(), today.getMonth(), 1));
+    endDate = toISO(today);
+  } else if (/last month/.test(lower)) {
+    const firstOfThis = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastMonthEnd = addDays(firstOfThis, -1);
+    startDate = toISO(new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1));
+    endDate = toISO(lastMonthEnd);
+  } else if (/this week/.test(lower)) {
+    const dow = today.getDay(); const diffToMon = (dow === 0 ? 6 : dow - 1);
+    startDate = toISO(addDays(today, -diffToMon));
+    endDate = toISO(today);
+  } else if (/last week/.test(lower)) {
+    const dow = today.getDay(); const diffToMon = (dow === 0 ? 6 : dow - 1);
+    const thisMon = addDays(today, -diffToMon);
+    startDate = toISO(addDays(thisMon, -7));
+    endDate = toISO(addDays(thisMon, -1));
+  } else if (/yesterday/.test(lower)) {
+    const y = addDays(today, -1);
+    startDate = toISO(y); endDate = toISO(y);
+  } else if (/\btoday\b/.test(lower)) {
+    startDate = toISO(today); endDate = toISO(today);
+  }
+
+  // Explicit dates: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, "22 July 2026"
+  const explicitDates = [];
+  let re = /(\d{4})-(\d{2})-(\d{2})/g;
+  while ((m = re.exec(text))) explicitDates.push(new Date(+m[1], +m[2]-1, +m[3]));
+  re = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/g;
+  while ((m = re.exec(text))) explicitDates.push(new Date(+m[3], +m[2]-1, +m[1]));
+  const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  re = /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{4})?/gi;
+  while ((m = re.exec(text))) {
+    const monIdx = months.indexOf(m[2].slice(0,3).toLowerCase());
+    const year = m[3] ? +m[3] : today.getFullYear();
+    if (monIdx >= 0) explicitDates.push(new Date(year, monIdx, +m[1]));
+  }
+  if (explicitDates.length) {
+    explicitDates.sort((a,b) => a - b);
+    startDate = toISO(explicitDates[0]);
+    endDate = toISO(explicitDates[explicitDates.length - 1]);
+  }
+
+  // "till date"/"till today"/"to date"/"so far" → end = today
+  if (/till date|till today|to date|so far|upto now|up to now/.test(lower)) {
+    endDate = toISO(today);
+  }
+
+  if (startDate && !endDate) endDate = startDate;
+  if (endDate && !startDate) startDate = endDate;
+
+  return { mid, reportType, startDate, endDate };
+}
+
 async function sendMessage() {
   const input=document.getElementById('query-input'), text=input.value.trim();
   if(!text) return;
   input.value=''; autoResize(input); document.getElementById('send-btn').disabled=true;
   const welcome=document.getElementById('welcome'); if(welcome)welcome.remove();
   addUserMsg(text); chatHistory.push({role:'user',content:text}); addThinking();
-  const todayStr=fmt(new Date());
-  const sys=`You are SQL Ginny, expert Trino/Hive SQL assistant.
-  CURRENT DATE: ${todayStr}. Use this if user says "till date", "today", "now", "current date".
-  Return EXACTLY ONE JSON:
-  1. {"intent":"settlement","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-  2. {"intent":"transaction","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-  3. {"intent":"clarify","mid":"<mid>","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD"}
-  4. {"intent":"custom","sql":"...","explanation":"..."}
-  CRITICAL INSTRUCTION: Extract the MID exactly as typed by the user, character-by-character. DO NOT miss, skip, or alter any letters or numbers. Only convert it to lowercase. Return ONLY valid JSON.`;
-  const historyForApi=chatHistory.slice(0,-1).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const contents=[...historyForApi,{role:'user',parts:[{text:text}]}];
-  try {
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':GEMINI_API_KEY},body:JSON.stringify({contents,systemInstruction:{parts:[{text:sys}]},generationConfig:{temperature:0.1,maxOutputTokens:1500}})});
-    const data=await res.json(); removeThinking();
-    if(data.error){addErrorMsg('API Error: '+data.error.message);}
-    else {
-      const raw= data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      try {
-        const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/); const p=JSON.parse(m[0]);
-if((p.intent==='settlement'||p.intent==='transaction')&&p.mid&&p.start_date&&p.end_date){
-          let cm=p.mid.trim().toLowerCase();
-          const userText=text.toLowerCase();
-         
-          if(!userText.includes(cm)){
-            const regexMatch=userText.match(/[a-z0-9]{15,35}/);
-            if(regexMatch) {
-                cm=regexMatch[0];
-            } else {
-                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again.");
-                document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-                return;
-            }
-          }
 
-          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          const sql = p.intent==='settlement' ? buildSettlementSQL(cm,p.start_date,p.end_date) : buildTransactionSQL(cm,p.start_date,p.end_date);
-          addAssistantMsg(sql, `✅ Query generated for MID: **${cm}**`);
-          chatHistory.push({role:'assistant',content:raw});
-         
-        } else if(p.intent==='clarify'&&p.mid&&p.start_date&&p.end_date){
-          let cm=p.mid.trim().toLowerCase();
-          const userText=text.toLowerCase();
-         
-          if(!userText.includes(cm)){
-            const regexMatch=userText.match(/[a-z0-9]{15,35}/);
-            if(regexMatch) {
-                cm=regexMatch[0];
-            } else {
-                addErrorMsg("⚠️ Mismatch Detected: The MID extracted by AI doesn't match your input. Please try again.");
-                document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
-                return;
-            }
-          }
-         
-          document.getElementById('mid-input').value=cm; document.getElementById('date-from').value=p.start_date; document.getElementById('date-to').value=p.end_date; document.getElementById('custom-date').checked=true;
-          const msg = `Got details for \`${cm}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
-          addTextOnlyMsg(msg);
-          chatHistory.push({role:'assistant',content:msg});
-        } else { addAssistantMsg(p.sql||raw,p.explanation||"The virtual assistant's latest message so generated this:"); chatHistory.push({role:'assistant',content:raw}); }
-      } catch { addAssistantMsg(raw,"The virtual assistant's latest message so generated this:"); chatHistory.push({role:'assistant',content:raw}); }
+  // Small delay keeps the "thinking" UX consistent; no network call, all logic runs locally.
+  setTimeout(() => {
+    try {
+      const p = parseUserQuery(text);
+      removeThinking();
+
+      if (!p.mid) {
+        addErrorMsg("⚠️ I couldn't find a valid MID in your message. Please include the full MID (letters/numbers, 15+ characters, no spaces).");
+      } else if (!p.reportType) {
+        document.getElementById('mid-input').value=p.mid;
+        if (p.startDate) document.getElementById('date-from').value=p.startDate;
+        if (p.endDate) document.getElementById('date-to').value=p.endDate;
+        document.getElementById('custom-date').checked=true;
+        const msg = `Got details for \`${p.mid}\`.\n\n**Do you need a Settlement or Transaction (Txn) Report?**`;
+        addTextOnlyMsg(msg);
+        chatHistory.push({role:'assistant',content:msg});
+      } else if (!p.startDate || !p.endDate) {
+        addErrorMsg("⚠️ I couldn't determine the date range. Try phrases like 'last 7 days', 'this month', or specific dates like '01/07/2026 to 20/07/2026'.");
+      } else {
+        document.getElementById('mid-input').value=p.mid;
+        document.getElementById('date-from').value=p.startDate;
+        document.getElementById('date-to').value=p.endDate;
+        document.getElementById('custom-date').checked=true;
+        const sql = p.reportType==='settlement' ? buildSettlementSQL(p.mid,p.startDate,p.endDate) : buildTransactionSQL(p.mid,p.startDate,p.endDate);
+        addAssistantMsg(sql, `✅ Query generated for MID: **${p.mid}**`);
+        chatHistory.push({role:'assistant',content:sql});
+      }
+    } catch(err) {
+      removeThinking();
+      addErrorMsg('Error: '+err.message);
     }
-  } catch(err){ removeThinking(); addErrorMsg('Network error: '+err.message); }
-  document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
+    document.getElementById('send-btn').disabled=false; document.getElementById('query-input').focus();
+  }, 400);
 }
 
 // ══ BW RECON — with Repayment deduction + clean amounts ══
