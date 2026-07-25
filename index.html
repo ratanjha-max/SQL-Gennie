@@ -550,44 +550,63 @@ function parseUserQuery(text) {
 
   // Explicit date spans — each span is either a single day or a whole month
   const spans = [];
+  const monthAlt = 'jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec';
+  let workingText = text;
+
+  function consume(re, buildSpan) {
+    re.lastIndex = 0;
+    let mm;
+    while ((mm = re.exec(workingText))) {
+      const span = buildSpan(mm);
+      if (span) {
+        spans.push(span);
+        workingText = workingText.slice(0, mm.index) + ' '.repeat(mm[0].length) + workingText.slice(mm.index + mm[0].length);
+      }
+      re.lastIndex = mm.index + 1; // avoid infinite loop on zero-length edge cases
+    }
+  }
 
   // 1) Numeric dates: DD/MM/YYYY, DD-MM-YYYY, DD\MM\YYYY
-  let re = /(\d{1,2})[\/\-\\](\d{1,2})[\/\-\\](\d{4})/g;
-  while ((m = re.exec(text))) {
-    const d = new Date(+m[3], +m[2]-1, +m[1]);
-    spans.push({start:d, end:d});
-  }
+  consume(new RegExp('(?<!\\d)(\\d{1,2})[\\/\\-\\\\](\\d{1,2})[\\/\\-\\\\](\\d{4})(?!\\d)', 'g'), mm => {
+    const d = new Date(+mm[3], +mm[2]-1, +mm[1]);
+    return { start: d, end: d };
+  });
   // 2) ISO dates: YYYY-MM-DD
-  re = /(\d{4})-(\d{2})-(\d{2})/g;
-  while ((m = re.exec(text))) {
-    const d = new Date(+m[1], +m[2]-1, +m[3]);
-    spans.push({start:d, end:d});
-  }
-
-  // 3) "22 July 2025" / "22 Jul" (day + month, optional year) — blank these out afterwards
-  //    so they aren't double-counted by the month-year-only pass below.
-  let workingText = text;
-  re = /(?<!\d)(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{4})?(?!\d)/gi;
-  while ((m = re.exec(text))) {
-    const monIdx = months.indexOf(m[2].slice(0,3).toLowerCase());
-    const year = m[3] ? +m[3] : today.getFullYear();
-    const day = +m[1];
-    if (monIdx >= 0 && day >= 1 && day <= 31) {
-      const d = new Date(year, monIdx, day);
-      spans.push({start:d, end:d});
-      workingText = workingText.slice(0, m.index) + ' '.repeat(m[0].length) + workingText.slice(m.index + m[0].length);
-    }
-  }
-
-  // 4) "July 2025" (month + year, no day) → whole month
-  re = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{4})\b/gi;
-  while ((m = re.exec(workingText))) {
-    const monIdx = months.indexOf(m[1].slice(0,3).toLowerCase());
-    const year = +m[2];
-    if (monIdx >= 0) {
-      spans.push({ start: new Date(year, monIdx, 1), end: new Date(year, monIdx, daysInMonth(year, monIdx)) });
-    }
-  }
+  consume(new RegExp('(?<!\\d)(\\d{4})-(\\d{2})-(\\d{2})(?!\\d)', 'g'), mm => {
+    const d = new Date(+mm[1], +mm[2]-1, +mm[3]);
+    return { start: d, end: d };
+  });
+  // 3) Year + Month + Day: "2025 April 1" — checked first since it's the most explicit combination
+  consume(new RegExp(`(?<!\\d)(\\d{4})(?!\\d)\\s+(${monthAlt})[a-z]*\\s+(?<!\\d)(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?`, 'gi'), mm => {
+    const monIdx = months.indexOf(mm[2].slice(0,3).toLowerCase());
+    const year = +mm[1], day = +mm[3];
+    if (monIdx < 0 || day < 1 || day > 31) return null;
+    const d = new Date(year, monIdx, day);
+    return { start: d, end: d };
+  });
+  // 4) Day + Month + optional Year, with optional ordinal suffix: "22 July 2025", "1st April", "22nd Jul"
+  consume(new RegExp(`(?<!\\d)(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?\\s+(${monthAlt})[a-z]*\\s*,?\\s*(?:(\\d{4})(?!\\d))?`, 'gi'), mm => {
+    const monIdx = months.indexOf(mm[2].slice(0,3).toLowerCase());
+    const day = +mm[1], year = mm[3] ? +mm[3] : today.getFullYear();
+    if (monIdx < 0 || day < 1 || day > 31) return null;
+    const d = new Date(year, monIdx, day);
+    return { start: d, end: d };
+  });
+  // 5) Month + Day + optional Year, with optional ordinal suffix: "April 1 2025", "March 30th 2026"
+  consume(new RegExp(`(${monthAlt})[a-z]*\\s+(?<!\\d)(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?\\s*,?\\s*(?:(\\d{4})(?!\\d))?`, 'gi'), mm => {
+    const monIdx = months.indexOf(mm[1].slice(0,3).toLowerCase());
+    const day = +mm[2], year = mm[3] ? +mm[3] : today.getFullYear();
+    if (monIdx < 0 || day < 1 || day > 31) return null;
+    const d = new Date(year, monIdx, day);
+    return { start: d, end: d };
+  });
+  // 6) Month + Year only, no day given: "July 2025" → whole month
+  consume(new RegExp(`\\b(${monthAlt})[a-z]*\\s+(?<!\\d)(\\d{4})(?!\\d)\\b`, 'gi'), mm => {
+    const monIdx = months.indexOf(mm[1].slice(0,3).toLowerCase());
+    const year = +mm[2];
+    if (monIdx < 0) return null;
+    return { start: new Date(year, monIdx, 1), end: new Date(year, monIdx, daysInMonth(year, monIdx)) };
+  });
 
   if (spans.length) {
     let minStart = spans[0].start, maxEnd = spans[0].end;
